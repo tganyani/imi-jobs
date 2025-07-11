@@ -25,10 +25,9 @@ import "react-medium-image-zoom/dist/styles.css";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { useAuthStore } from "@/stores/authStore";
-import { getSocket } from "@/lib/socket";
 dayjs.extend(relativeTime);
 
-const socket = getSocket();
+import { socket } from "@/lib/socket";
 
 export default function ViewUser() {
   const { viewUserId } = useParams();
