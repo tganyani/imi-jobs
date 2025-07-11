@@ -6,6 +6,7 @@ import Loading from "@/components/loading";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import axios from "axios";
 
 type Inputs = {
@@ -13,7 +14,7 @@ type Inputs = {
   confirmpassword: string;
 };
 
-export default function ResetPassword() {
+const ResetPasswordComponent = () => {
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
   const [loading, setLoading] = useState<boolean>(false);
@@ -74,11 +75,19 @@ export default function ResetPassword() {
           variant="outline"
           className="w-100 bg-[var(--mygreen)] text-white mt-6"
           onClick={handleSubmit(onSubmit)}
-          disabled={!allFilled || !matchedPassword|| loading}
+          disabled={!allFilled || !matchedPassword || loading}
         >
           {loading ? <Loading color="white" /> : "submit"}
         </Button>
       </div>
     </div>
+  );
+};
+
+export default function ResetPassword() {
+  return (
+    <Suspense fallback={<Loading color="gray" />}>
+      <ResetPasswordComponent />
+    </Suspense>
   );
 }

@@ -10,13 +10,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import Loading from "@/components/loading";
+import { Suspense } from "react";
 import axios from "axios";
 
 type Inputs = {
   code: string;
 };
 
-export default function VerifyPassword() {
+const VerifyPasswordComponent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams.get("email");
@@ -91,5 +92,13 @@ export default function VerifyPassword() {
         </Button>
       </div>
     </div>
+  );
+};
+
+export default function VerifyPassword() {
+  return (
+    <Suspense fallback={<Loading color="gray" />}>
+      <VerifyPasswordComponent />
+    </Suspense>
   );
 }
