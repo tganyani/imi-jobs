@@ -1,0 +1,19 @@
+import prisma from "@/lib/prisma";
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = await params;
+    const deleted = await prisma.language.delete({
+        where:{
+            id
+        }
+    })
+    return Response.json({ id: deleted.id});
+  } catch (err) {
+    console.error(err);
+    return Response.json({ error: "error" }, { status: 500 });
+  }
+}

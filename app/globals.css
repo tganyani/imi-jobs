@@ -3,6 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --mygreen: #14a800;
 }
 
 @theme inline {
@@ -11,7 +12,34 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
-
+.navItemsStyle {
+  @apply flex sm:w-auto w-30 flex-row justify-between flex-nowrap items-center gap-x-1 hover:text-[var(--mygreen)];
+}
+.signInputs {
+  @apply sm:w-100 w-full  focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300;
+}
+.modalInputs {
+  @apply w-full  focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-sm;
+}
+.seachInputs {
+  @apply w-70  focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300;
+}
+.correctPassword {
+  @apply w-100  focus:border-green-400 focus:ring-1 focus:ring-green-400 border-green-500;
+}
+.wrongPassword {
+  @apply w-100  focus:border-red-400 focus:ring-1 focus:ring-red-400 border-red-500;
+}
+.vaccancyInput1 {
+  @apply sm:w-70 w-full focus-visible:ring-1  border-1 border-stone-400 text-sm ;
+}
+/* tip tab btn */
+.vaccancyInputdiv2 {
+  @apply flex sm:flex-row gap-x-4 flex-col justify-between;
+}
+.vaccancyLabel {
+  @apply text-sm;
+}
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -19,8 +47,36 @@
   }
 }
 
+@layer components {
+  .ql-editor {
+    padding: 0 !important; /* Tailwind pt-1 = 4px */
+    margin: 0 !important;
+  }
+  .ql-editor h3 {
+    color: black;
+    margin-top: 16px !important;
+    font-size: 14px !important;
+  }
+  .ql-container {
+    border-radius: 0 0 4px 4px !important ;
+    padding: 10px !important;
+  }
+  .ql-toolbar {
+  border-radius:  4px 4px 0 0 !important ;
+  }
+ 
+
+}
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+@media screen and (max-width: 600px) {
+  @layer components {
+.ql-editor ol,.ql-editor ol{
+    padding-left: 0px !important;
+  }
+  }
+  
 }
