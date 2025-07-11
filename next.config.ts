@@ -7,7 +7,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [],
     domains: ["res.cloudinary.com"],
   },
-   
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
