@@ -49,7 +49,7 @@ type ServerToClientEvents = {
 };
 
 
-   export const  socket:Socket<ServerToClientEvents, ClientToServerEvents> = io("http://localhost:5000", {
+   export const  socket:Socket<ServerToClientEvents, ClientToServerEvents> = io("https://imi-jobs-s-sever.onrender.com", {
       transports: ["websocket"],
     });
 
