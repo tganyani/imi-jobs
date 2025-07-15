@@ -108,7 +108,7 @@ export function ApplyModal({
             action: (
               <Button
                 size="sm"
-                onClick={() => router.push(`/applied`)}
+                onClick={() => router.push(`/vaccancy/applied`)}
                 className="px-3 rounded-md bg-[var(--mygreen)] text-white text-sm hover:bg-green-600 transition"
               >
                 view application

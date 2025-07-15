@@ -1,24 +1,24 @@
 "use client";
 import useSWR from "swr";
 import { useAuthStore } from "@/stores/authStore";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { Input } from "./ui/input";
 import Loading from "@/components/loading";
-import { fetcher, stringToColor } from "@/lib/constant";
+import { fetcher, Role, stringToColor } from "@/lib/constant";
 import dayjs from "dayjs";
 import { RoomType } from "@/lib/types";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { useEffect, useState } from "react";
-import { CheckCheck, Check } from "lucide-react";
+import { CheckCheck, Check, Menu } from "lucide-react";
 dayjs.extend(localizedFormat);
-
 
 import { socket } from "@/lib/socket";
 
 export default function Chats() {
-  const { userId ,email} = useAuthStore();
+  const router = useRouter();
+  const { userId, email, role } = useAuthStore();
   const pathname = usePathname();
   const [isTyping, setIsTyping] = useState<boolean>(false);
 
@@ -52,8 +52,8 @@ export default function Chats() {
     socket?.on("refreshDelivered", handleMutate);
     socket?.on("refreshRead", handleMutate);
     socket.on("userTyping", handleTyping);
-    socket.on("userOffline",handleMutate)
-    socket.on("userOnline",handleMutate)
+    socket.on("userOffline", handleMutate);
+    socket.on("userOnline", handleMutate);
     return () => {
       socket?.off("newMessage", handleNewMessage);
       socket?.off("connect", handleConnect);
@@ -72,28 +72,53 @@ export default function Chats() {
       } sm:block  h-screen overflow-y-auto bg-neutral-50`}
     >
       <div className="sticky z-2 top-0 p-2  shadow-stone-100 shadow-sm">
-        <Input
-          placeholder="search"
-          className="h-8 rounded-full text-sm focus-visible:ring-0 focus-visible:border-gray-300 border-stone-300"
-        />
+        <div className="flex gap-x-4 flex-nowrap items-center">
+          <Menu
+            onClick={
+              role === Role.candidate
+                ? () => router.push("/")
+                : () => router.push("/vaccancy/posted")
+            }
+            className="text-stone-300 h-6 w-6 shrink-0"
+          />
+          <Input
+            placeholder="search"
+            className="h-8 rounded-full text-sm focus-visible:ring-0 focus-visible:border-gray-300 border-stone-300"
+          />
+        </div>
       </div>
       <div className="flex flex-col gap-y-2  ">
         {error && <div>error fetching</div>}
-        {isLoading && !data? (
-            <Loading color="grey" />
+        {isLoading && !data ? (
+          <Loading color="grey" />
         ) : (
           data.map((room: RoomType) => (
             <Link key={room.id} href={`/rooms/${room.id}`}>
-              <div className={`flex flex-row flex-nowrap gap-x-4 px-2 rounded-sm items-center bg-${pathname===`/rooms/${room.id}`?"stone-200":""} hover:bg-stone-100`}>
+              <div
+                className={`flex flex-row flex-nowrap gap-x-4 px-2 rounded-sm items-center bg-${
+                  pathname === `/rooms/${room.id}` ? "stone-200" : ""
+                } hover:bg-stone-100`}
+              >
                 <div>
-                  <Avatar className="z-1 text-white" style={{backgroundColor:room?.users?.name?stringToColor(room?.users?.name):stringToColor(email as string)}}>
+                  <Avatar
+                    className="z-1 text-white"
+                    style={{
+                      backgroundColor: room?.users?.name
+                        ? stringToColor(room?.users?.name)
+                        : stringToColor(email as string),
+                    }}
+                  >
                     <AvatarImage src={room?.users?.image} alt="user-profile" />
-                    <AvatarFallback>{room?.users?.name?room?.users?.name[0]:"Y"}</AvatarFallback>
+                    <AvatarFallback>
+                      {room?.users?.name ? room?.users?.name[0] : "Y"}
+                    </AvatarFallback>
                   </Avatar>
                 </div>
                 <div className="flex flex-col  flex-1">
                   <div className="flex flex-row flex-nowrap justify-between flex-1">
-                    <p className="text-sm ">{room?.users?.name?room?.users?.name:"You"}</p>
+                    <p className="text-sm ">
+                      {room?.users?.name ? room?.users?.name : "You"}
+                    </p>
                     <p className="text-sm text-gray-500 ">
                       {dayjs(room.chats[0]?.dateCreated).format("LT")}
                     </p>
@@ -106,7 +131,7 @@ export default function Chats() {
                         {room.chats[0]?.message}
                       </p>
                     )}
-
+                    {room?.nUnread>0 && <div className="text-sm text-white bg-[var(--mygreen)] px-2 rounded-full">{room?.nUnread}</div>}
                     {room.chats[0]?.userId === userId && (
                       <div>
                         {room.chats[0]?.delivered ? (

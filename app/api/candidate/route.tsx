@@ -1,3 +1,4 @@
+import { sendJobProposalEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 
@@ -49,6 +50,27 @@ export async function POST(req: NextRequest) {
         vaccancyId,
         userId,
       },
+      select: {
+        id: true,
+        vaccancy: {
+          select: {
+            id: true,
+            title: true,
+            companyName: true,
+            user: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
     });
     const room = await prisma.room.upsert({
       where: {
@@ -64,6 +86,14 @@ export async function POST(req: NextRequest) {
         },
       },
     });
+    await sendJobProposalEmail(
+      propose.user.email,
+      propose.vaccancy.title,
+      propose.vaccancy.companyName,
+      propose.user.name,
+      propose.vaccancy.user.name,
+      propose.vaccancy.id
+    );
     return Response.json({
       proposed: true,
       id: propose.id,

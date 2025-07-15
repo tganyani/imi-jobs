@@ -61,7 +61,7 @@ export default function Register() {
           <Input
             type="text"
             {...register("name", { required: true })}
-            className="signInputs"
+            className="signInputs text-sm"
           />
         </div>
         {errors.name && (
@@ -72,7 +72,7 @@ export default function Register() {
           <Input
             type="email"
             {...register("email", { required: true })}
-            className="signInputs"
+            className="signInputs text-sm"
           />
         </div>
         <div className="">

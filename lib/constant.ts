@@ -140,4 +140,20 @@ export const defaultCompanyTemplate = `
   
 `;
 
+export function linkifyAll(text: string): string {
+  // Order: links → email → phone
+  const linkRegex = /https?:\/\/[^\s]+/g;
+  const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z]{2,}\b/gi;
+  const phoneRegex = /(?:\+?\d{1,3})?[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/g;
 
+  return text
+    .replace(linkRegex, (url) => {
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#007bff; word-break:break-all;text-decoration: underline; overflow-wrap: anywhere;">${url}</a>`;
+    })
+    .replace(emailRegex, (email) => {
+      return `<span style="color:#ff5722">${email}</span>`;
+    })
+    .replace(phoneRegex, (phone) => {
+      return `<span style="color:#ff5722">${phone}</span>`;
+    });
+}

@@ -43,11 +43,11 @@ const ResetPasswordComponent = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center min-h-screen ">
+    <div className="flex flex-col justify-center items-center min-h-screen px-2">
       <p>Reset password</p>
-      <div>
-        <div>
-          <p>new password</p>
+      <div className="w-full sm:w-auto">
+        <div >
+          <p className="text-sm">new password</p>
           <Input
             type="password"
             className="signInputs"
@@ -58,7 +58,7 @@ const ResetPasswordComponent = () => {
           <span className="text-red-500 text-sm ">This field is required</span>
         )}
         <div>
-          <p>confirm new password</p>
+          <p className="text-sm">confirm new password</p>
           <Input
             type="password"
             className={
@@ -73,11 +73,11 @@ const ResetPasswordComponent = () => {
         </div>
         <Button
           variant="outline"
-          className="w-100 bg-[var(--mygreen)] text-white mt-6"
+          className="sm:w-100 w-full bg-[var(--mygreen)] text-white mt-6"
           onClick={handleSubmit(onSubmit)}
           disabled={!allFilled || !matchedPassword || loading}
         >
-          {loading ? <Loading color="white" /> : "submit"}
+          {loading ? <Loading color="white" /> : "reset"}
         </Button>
       </div>
     </div>

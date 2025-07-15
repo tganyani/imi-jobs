@@ -12,6 +12,16 @@ export async function GET(req: NextRequest) {
       select: {
         rooms: {
           include: {
+            _count: {
+              select: {
+                chats: {
+                  where: {
+                    read: false,
+                    NOT: { userId },
+                  },
+                },
+              },
+            },
             chats: {
               orderBy: {
                 dateCreated: "desc",
@@ -21,8 +31,8 @@ export async function GET(req: NextRequest) {
                 message: true,
                 userId: true,
                 dateCreated: true,
-                delivered:true,
-                read:true,
+                delivered: true,
+                read: true,
               },
             },
             users: {
@@ -33,7 +43,7 @@ export async function GET(req: NextRequest) {
               },
               select: {
                 name: true,
-                image:true,
+                image: true,
               },
             },
           },
@@ -45,6 +55,7 @@ export async function GET(req: NextRequest) {
       user?.rooms?.map((room) => ({
         ...room,
         users: room?.users[0],
+        nUnread:room._count.chats
       }))
     );
   } catch (err) {

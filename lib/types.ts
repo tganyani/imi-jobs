@@ -33,10 +33,10 @@ export type Application = {
   createdAt: string;
   status: string;
   nApplications: number;
-  nViews:number
+  nViews: number;
   jobTitle: string;
-  roomId:string
-  jobId:string
+  roomId: string;
+  jobId: string;
 };
 
 export type Applicant = {
@@ -47,7 +47,7 @@ export type Applicant = {
   candidateName: string;
   userId: string;
   roomId: string;
-  roomName:string
+  roomName: string;
 };
 
 export type ViewJob = JobInputs & {
@@ -66,7 +66,7 @@ export type ViewJob = JobInputs & {
   user: {
     email: string;
     id: string;
-    companyInfo:string
+    companyInfo: string;
   };
 };
 export type Edu = {
@@ -123,7 +123,7 @@ export type Candidate = {
   address: string;
   eduction: Edu[];
   skills: Skill[];
-  languages:Language[]
+  languages: Language[];
   employmentHistory: Employ[];
   projects: Project[];
   jobsApplied: Applicant[];
@@ -155,7 +155,14 @@ export type RoomType = {
   chats: Chat[];
   lastSeen: true;
   isOnline: true;
-  users: { name: string; image: string; lastSeen: string; isOnline: boolean };
+  nUnread: number;
+  users: {
+    name: string;
+    image: string;
+    lastSeen: string;
+    isOnline: boolean;
+    id: string;
+  };
 };
 
 export type SearchUser = {

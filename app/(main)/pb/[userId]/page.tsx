@@ -1,20 +1,18 @@
 "use client";
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { ApplicationStatus, fetcher, generateRoomName } from "@/lib/constant";
+import { useParams} from "next/navigation";
+import { fetcher} from "@/lib/constant";
 import useSWR from "swr";
 import Loading from "@/components/loading";
 import { Candidate, Edu, Employ, Language, Project, Skill } from "@/lib/types";
 import {
   MapPin,
-  MessageCircle,
   Phone,
   Globe,
   MoveRight,
   Copy,
   CopyCheck,
 } from "lucide-react";
-import { toast } from "sonner";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -22,21 +20,14 @@ import { ProjectCarousel } from "@/components/projectCarousel";
 import Zoom from "react-medium-image-zoom";
 import { CldImage } from "next-cloudinary";
 import "react-medium-image-zoom/dist/styles.css";
-import { Button } from "@/components/ui/button";
-import axios from "axios";
-import { useAuthStore } from "@/stores/authStore";
 dayjs.extend(relativeTime);
 
-import { socket } from "@/lib/socket";
 
-export default function ViewUser() {
-  const { viewUserId } = useParams();
+export default function ViewPubicUser() {
+  const { userId } = useParams();
   const [copeid, setCopied] = useState<boolean>(false);
-  const router = useRouter();
-  const { postedId: vaccancyId } = useParams() as { postedId: string };
-  const { email, userId } = useAuthStore() as { userId: string; email: string };
-  const { data, error, isLoading, mutate } = useSWR<Candidate>(
-    `/api/vaccancy/applicants/${viewUserId}?vaccancyId=${vaccancyId}`,
+  const { data, error, isLoading } = useSWR<Candidate>(
+    `/api/candidate/${userId}`,
     fetcher
   );
   const handleCopy = async (text: string) => {
@@ -49,81 +40,8 @@ export default function ViewUser() {
       console.error(err);
     }
   };
-  const handlePropose = async () => {
-    await mutate(
-      data
-        ? { ...data, jobsProposed: [{ ...data.jobsProposed[0], vaccancyId }] }
-        : undefined,
-      false
-    );
-    const message = `<h6 style="color: #2e7d32;">Job Offer Proposal</h6> <br/>You have recived a job proposal from for this postion  https://imi-jobs.vercel.app/vaccancy/${vaccancyId}`;
-    const roomData = {
-      name: generateRoomName(email as string, data?.email as string),
-      ids: [userId, viewUserId],
-    };
-    await axios
-      .post(`/api/candidate`, { vaccancyId, userId: viewUserId, roomData })
-      .then(({ data }) => {
-        if (data.proposed) {
-          socket?.emit("sendMessage", {
-            message,
-            userId,
-            name: data?.roomName,
-            roomId: data?.roomId,
-          });
-          toast("Candidate successfully proposed ", {
-            description: "You can continue to the chats ",
-            action: (
-              <Button
-                size="sm"
-                onClick={() => router.push(`/rooms/${data?.roomId}`)}
-                className="px-3 rounded-md bg-green-500 text-white text-sm  transition"
-              >
-                <MessageCircle className="h-4 w-4 text-white" />
-                <p>open chat</p>
-              </Button>
-            ),
-          });
-        }
-      });
-    mutate();
-  };
-  const handleAction = async (
-    id: string,
-    status: string,
-    name: string,
-    roomId: string
-  ) => {
-    await mutate(
-      data
-        ? { ...data, jobsApplied: [{ ...data.jobsApplied[0], status }] }
-        : undefined,
-      false
-    );
-    await axios
-      .patch(`/api/vaccancy/applicants/${id}`, { status })
-      .then(({ data }) => {
-        if (data?.updated) {
-          if (status === ApplicationStatus.invited) {
-            socket?.emit("sendMessage", {
-              message: `<h6 style="color: #2e7d32;">Interview Invitation</h6> <br/>You have recieved an invitation for this position  https://imi-jobs.vercel.app/vaccancy/${vaccancyId}`,
-              userId,
-              name,
-              roomId,
-            });
-          } else {
-            socket?.emit("sendMessage", {
-              message: `<h6 style="color: #c62828;">Application Rejected</h6> <br/>You have recieved an application rejection for this position  https://imi-jobs.vercel.app/vaccancy/${vaccancyId}`,
-              userId,
-              name,
-              roomId,
-            });
-          }
-        }
-      })
-      .catch((err) => console.error(err));
-    await mutate();
-  };
+  
+  
   if (isLoading)
     return (
       <div>
@@ -164,63 +82,7 @@ export default function ViewUser() {
             </Zoom>
           </div>
         </div>
-        <div className="flex gap-4 flex-wrap">
-          {data.jobsApplied.length < 1 && (
-            <Button
-              disabled={data.jobsProposed[0]?.vaccancyId === vaccancyId}
-              onClick={handlePropose}
-              size="sm"
-              className="bg-green-500 w-60 text-white border-none rounded-full [@media(max-width:480px)]:w-full"
-            >
-              {data.jobsProposed[0]?.vaccancyId === vaccancyId
-                ? " proposed"
-                : " propose"}
-            </Button>
-          )}
-
-          {data.jobsApplied.length > 0 && (
-            <Button
-              onClick={() =>
-                handleAction(
-                  data.jobsApplied[0]?.id,
-                  ApplicationStatus.invited,
-                  data.jobsApplied[0].roomName,
-                  data.jobsApplied[0].roomId
-                )
-              }
-              disabled={
-                data.jobsApplied[0]?.status === ApplicationStatus.invited
-              }
-              size="sm"
-              className="bg-[var(--mygreen)] w-60 text-white border-none rounded-full [@media(max-width:480px)]:w-full"
-            >
-              {data.jobsApplied[0]?.status === ApplicationStatus.invited
-                ? "Invited"
-                : "Invite"}
-            </Button>
-          )}
-          {data.jobsApplied.length > 0 && (
-            <Button
-              onClick={() =>
-                handleAction(
-                  data.jobsApplied[0]?.id,
-                  ApplicationStatus.rejected,
-                  data.jobsApplied[0].roomName,
-                  data.jobsApplied[0].roomId
-                )
-              }
-              disabled={
-                data.jobsApplied[0]?.status === ApplicationStatus.rejected
-              }
-              size="sm"
-              className="bg-red-500 w-60  text-white border-none rounded-full [@media(max-width:480px)]:w-full"
-            >
-              {data.jobsApplied[0]?.status === ApplicationStatus.rejected
-                ? " Rejectd"
-                : " Reject"}
-            </Button>
-          )}
-        </div>
+      
       </div>
 
       {/* bio */}

@@ -63,7 +63,7 @@ export default function Login() {
           <Input
             type="email"
             {...register("email", { required: true })}
-            className="signInputs"
+            className="signInputs text-sm"
           />
         </div>
         {errors.email && (
@@ -74,7 +74,7 @@ export default function Login() {
           <Input
             type="password"
             {...register("password", { required: true })}
-            className="signInputs"
+            className="signInputs text-sm"
           />
         </div>
         <div className="flex flex-row justify-end items-center">

@@ -25,10 +25,10 @@
   @apply w-70  focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300;
 }
 .correctPassword {
-  @apply w-100  focus:border-green-400 focus:ring-1 focus:ring-green-400 border-green-500;
+  @apply sm:w-100 w-full focus:border-green-400 focus:ring-1 focus:ring-green-400 border-green-500;
 }
 .wrongPassword {
-  @apply w-100  focus:border-red-400 focus:ring-1 focus:ring-red-400 border-red-500;
+  @apply sm:w-100 w-full focus:border-red-400 focus:ring-1 focus:ring-red-400 border-red-500;
 }
 .vaccancyInput1 {
   @apply sm:w-70 w-full focus-visible:ring-1  border-1 border-stone-400 text-sm ;

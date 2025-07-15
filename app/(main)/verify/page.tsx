@@ -53,11 +53,11 @@ const VerifyPasswordComponent = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center min-h-screen ">
+    <div className="flex flex-col justify-center items-center min-h-screen px-2">
       <p>Verify your email</p>
       <p className="text-sm">We have send the verification code to</p>
       <p className="text-sm text-gray-400">{email}</p>
-      <div>
+      <div className="w-full sm:w-100">
         <Controller
           name="code"
           control={control}
@@ -67,12 +67,12 @@ const VerifyPasswordComponent = () => {
               value={field.value}
               onChange={field.onChange}
             >
-              <InputOTPGroup className="flex w-100 flex-row justify-between mt-6">
+              <InputOTPGroup className="flex w-full sm:w-100 flex-row justify-between mt-6">
                 {[...Array(6)].map((_, i) => (
                   <InputOTPSlot
                     key={i}
                     index={i}
-                    className="border border-gray-300 rounded-md"
+                    className="  border-gray-300 rounded-md "
                   />
                 ))}
               </InputOTPGroup>
@@ -84,7 +84,7 @@ const VerifyPasswordComponent = () => {
         )}
         <Button
           variant="outline"
-          className="w-100 bg-[var(--mygreen)] text-white mt-6"
+          className="sm:w-100 w-full bg-[var(--mygreen)] text-white mt-6"
           onClick={handleSubmit(onSubmit)}
           disabled={!allFilled || loading}
         >

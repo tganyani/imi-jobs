@@ -11,8 +11,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { Suspense } from "react";
 import { socket } from "@/lib/socket";
 
-const ApplicantComponent = ()=>{
-   const router = useRouter();
+const ApplicantComponent = () => {
+  const router = useRouter();
   const { postedId: vaccancyId } = useParams();
   const { userId } = useAuthStore() as { userId: string };
   const searchParams = useSearchParams();
@@ -46,14 +46,14 @@ const ApplicantComponent = ()=>{
         if (data?.updated) {
           if (status === ApplicationStatus.invited) {
             socket?.emit("sendMessage", {
-              message: "You have recived an invitation",
+              message: `<h6 style="color: #2e7d32;">Interview Invitation</h6> <br/>You have recieved an invitation for this position  https://imi-jobs.vercel.app/vaccancy/${vaccancyId}`,
               userId,
               name,
               roomId,
             });
           } else {
             socket?.emit("sendMessage", {
-              message: "You have recived an application rejection",
+              message: `<h6 style="color: #c62828;">Application Rejected</h6> <br/>You have recieved an application rejection for this position  https://imi-jobs.vercel.app/vaccancy/${vaccancyId}`,
               userId,
               name,
               roomId,
@@ -72,93 +72,92 @@ const ApplicantComponent = ()=>{
     );
   if (error) return <div>error fetching</div>;
   if (!data) return null;
-  return(
-<div className="flex flex-col gap-y-4 p-1">
-        <p className="">
-          Applicants for <span className="font-semibold">{vaccancyTitle}</span>
-        </p>
-        <div className="flex flex-col gap-y-4">
-          {data.map((aplnt) => (
-            <div
-              key={aplnt.id}
-              className="flex flex-col gap-y-2 border-1  border-stone-300 p-2 rounded-xl"
-            >
-              <div className="flex  justify-between overflow-hidden">
-                <p className="text-sm truncate whitespace-nowrap overflow-hidden">
-                  {aplnt.candidateName}
-                </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-green-500 rounded-full w-50 hover:text-[var(--mygreen)] hover:border-[var(--mygreen)] hover:border-2"
-                  onClick={() => router.push(`/rooms/${aplnt.roomId}`)}
-                >
-                  <MessageCirclePlus className="h-4 w-4" />
-                  Start conversation
-                </Button>
-              </div>
-              <p className="text-sm text-gray-500 line-clamp-1">
-                {aplnt.coverLetter}
+  return (
+    <div className="flex flex-col gap-y-4 p-1">
+      <p className="">
+        Applicants for <span className="font-semibold">{vaccancyTitle}</span>
+      </p>
+      <div className="flex flex-col gap-y-4">
+        {data.map((aplnt) => (
+          <div
+            key={aplnt.id}
+            className="flex flex-col gap-y-2 border-1  border-stone-300 p-2 rounded-xl"
+          >
+            <div className="flex  justify-between overflow-hidden">
+              <p className="text-sm truncate whitespace-nowrap overflow-hidden">
+                {aplnt.candidateName}
               </p>
-
               <Button
-                onClick={() =>
-                  router.push(`/vaccancy/posted/${vaccancyId}/${aplnt.userId}`)
-                }
-                variant="link"
                 size="sm"
-                className=" w-20 text-[var(--mygreen)] h-auto "
+                variant="outline"
+                className="text-green-500 rounded-full w-50 hover:text-[var(--mygreen)] hover:border-[var(--mygreen)] hover:border-2"
+                onClick={() => router.push(`/rooms/${aplnt.roomId}`)}
               >
-                view profile
+                <MessageCirclePlus className="h-4 w-4" />
+                Start conversation
               </Button>
-              <div className="flex gap-4 flex-wrap">
-                <Button
-                  disabled={aplnt.status === ApplicationStatus.invited}
-                  size="sm"
-                  className="bg-[var(--mygreen)] w-60 text-white border-none rounded-full [@media(max-width:480px)]:w-full"
-                  onClick={() =>
-                    handleAction(
-                      aplnt.id,
-                      ApplicationStatus.invited,
-                      aplnt.roomName,
-                      aplnt.roomId
-                    )
-                  }
-                >
-                  {aplnt.status === ApplicationStatus.invited
-                    ? "Invited"
-                    : "Invite"}
-                </Button>
-                <Button
-                  disabled={aplnt.status === ApplicationStatus.rejected}
-                  size="sm"
-                  className="bg-red-500 w-60 text-white border-none rounded-full [@media(max-width:480px)]:w-full"
-                  onClick={() =>
-                    handleAction(
-                      aplnt.id,
-                      ApplicationStatus.rejected,
-                      aplnt.roomName,
-                      aplnt.roomId
-                    )
-                  }
-                >
-                  {aplnt.status === ApplicationStatus.rejected
-                    ? "Rejected"
-                    : "Reject"}
-                </Button>
-              </div>
             </div>
-          ))}
-        </div>
+            <p className="text-sm text-gray-500 line-clamp-1">
+              {aplnt.coverLetter}
+            </p>
+
+            <Button
+              onClick={() =>
+                router.push(`/vaccancy/posted/${vaccancyId}/${aplnt.userId}`)
+              }
+              variant="link"
+              size="sm"
+              className=" w-20 text-[var(--mygreen)] h-auto "
+            >
+              view profile
+            </Button>
+            <div className="flex gap-4 flex-wrap">
+              <Button
+                disabled={aplnt.status === ApplicationStatus.invited}
+                size="sm"
+                className="bg-[var(--mygreen)] w-60 text-white border-none rounded-full [@media(max-width:480px)]:w-full"
+                onClick={() =>
+                  handleAction(
+                    aplnt.id,
+                    ApplicationStatus.invited,
+                    aplnt.roomName,
+                    aplnt.roomId
+                  )
+                }
+              >
+                {aplnt.status === ApplicationStatus.invited
+                  ? "Invited"
+                  : "Invite"}
+              </Button>
+              <Button
+                disabled={aplnt.status === ApplicationStatus.rejected}
+                size="sm"
+                className="bg-red-500 w-60 text-white border-none rounded-full [@media(max-width:480px)]:w-full"
+                onClick={() =>
+                  handleAction(
+                    aplnt.id,
+                    ApplicationStatus.rejected,
+                    aplnt.roomName,
+                    aplnt.roomId
+                  )
+                }
+              >
+                {aplnt.status === ApplicationStatus.rejected
+                  ? "Rejected"
+                  : "Reject"}
+              </Button>
+            </div>
+          </div>
+        ))}
       </div>
-  )
-}
+    </div>
+  );
+};
 
 export default function Applicants() {
- 
   return (
     <Suspense fallback={<Loading color="gray" />}>
-      <ApplicantComponent/>
+      <ApplicantComponent />
     </Suspense>
   );
 }

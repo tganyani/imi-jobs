@@ -8,8 +8,8 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { useDropzone } from "react-dropzone";
 import { Skeleton } from "@/components/ui/skeleton";
+import DOMPurify from "dompurify";
 import {
-  EllipsisVertical,
   CheckCheck,
   Paperclip,
   SendHorizontal,
@@ -22,7 +22,12 @@ import {
 import throttle from "lodash/throttle";
 import { useEffect, useState } from "react";
 import Loading from "@/components/loading";
-import { fetcher, formatFileSize, isImageFile } from "@/lib/constant";
+import {
+  fetcher,
+  formatFileSize,
+  isImageFile,
+  linkifyAll,
+} from "@/lib/constant";
 import dayjs from "dayjs";
 import { Chat, RoomType } from "@/lib/types";
 import localizedFormat from "dayjs/plugin/localizedFormat";
@@ -30,6 +35,7 @@ import axios from "axios";
 dayjs.extend(localizedFormat);
 
 import { socket } from "@/lib/socket";
+import RoomPopover from "@/components/roomPopover";
 
 export default function Room() {
   const router = useRouter();
@@ -41,7 +47,10 @@ export default function Room() {
   const [files, setFiles] = useState<File[]>([]);
   const { data, error, isLoading, mutate } = useSWR<RoomType>(
     `/api/room/${roomId}?userId=${userId}`,
-    fetcher
+    fetcher,
+    {
+      keepPreviousData: true,
+    }
   );
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
@@ -72,7 +81,7 @@ export default function Room() {
       socket?.emit("joinRooms", userId as string);
       socket?.emit("read", { userId, roomId });
     };
-    const handleMutate= () => {
+    const handleMutate = () => {
       mutate();
     };
     const handleTyping = () => {
@@ -87,8 +96,9 @@ export default function Room() {
     socket?.emit("read", { userId, roomId });
     socket?.emit("joinRooms", userId as string);
     socket.on("userTyping", handleTyping);
-    socket.on("userOffline",handleMutate)
-    socket.on("userOnline",handleMutate)
+    socket.on("userOffline", handleMutate);
+    socket.on("userOnline", handleMutate);
+
     return () => {
       socket?.off("newMessage", handleNewMessage);
       socket?.off("connect", handleConnect);
@@ -99,6 +109,13 @@ export default function Room() {
       // socket.off("userTyping",handleTyping)
     };
   }, []);
+  useEffect(() => {
+    // scroll to the bottom at first render
+    scrollMessage.current?.scrollIntoView({
+      block: "end",
+      behavior: "smooth",
+    });
+  }, [data]);
 
   useEffect(() => {
     const throttledTyping = throttle(() => {
@@ -189,7 +206,7 @@ export default function Room() {
               className=" text-stone-300"
             />
           </div>
-          { isLoading&&!data? (
+          {isLoading && !data ? (
             <div className="flex flex-col gap-y-2">
               <Skeleton className="h-4 w-40 rounded-full bg-stone-200" />
               <Skeleton className="h-4 w-30 rounded-full bg-stone-200" />
@@ -199,13 +216,19 @@ export default function Room() {
               <p className="text-sm">{data?.users?.name}</p>
               {isTyping ? (
                 <p className="text-sm text-green-500">typing ...</p>
+              ) : data?.users?.isOnline ? (
+                <p className="text-sm text-green-500">online</p>
               ) : (
-                data?.users?.isOnline?<p className="text-sm text-green-500">online</p>:<p className="text-sm text-gray-500">last seen {dayjs(data?.users?.lastSeen).format("LT")}</p>
+                <p className="text-sm text-gray-500">
+                  last seen {dayjs(data?.users?.lastSeen).format("LT")}
+                </p>
               )}
             </div>
           )}
           <div>
-            <EllipsisVertical className=" text-stone-300" />
+            <RoomPopover
+              userId={data?.users ? (data?.users.id as string) : userId}
+            />
           </div>
         </div>
       </div>
@@ -261,7 +284,12 @@ export default function Room() {
                       )}
                     </div>
                   ))}
-                  <p className="text-sm text-gray-600">{chat.message}</p>
+                  <p
+                    className="text-sm text-gray-600"
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(linkifyAll(chat.message)),
+                    }}
+                  />
                   <div className="flex justify-between flex-nowrap items-center">
                     <p className="text-stone-400 text-sm">
                       {dayjs(chat.dateCreated).format("LT")}
@@ -341,6 +369,11 @@ export default function Room() {
             onChange={(e) => setMessage(e.target.value)}
             placeholder={files.length > 0 ? "add caption" : "type something"}
             className="min-h-8 rounded-full text-sm focus-visible:ring-0 focus-visible:border-gray-300 border-stone-300"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                handlesendMessage();
+              }
+            }}
           />
           {message && (
             <div

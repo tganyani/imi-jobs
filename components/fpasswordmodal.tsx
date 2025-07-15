@@ -50,17 +50,17 @@ export default function ForgotPasswordMoadal() {
       <DialogTrigger className="text-[var(--mygreen)] mt-2 text-sm">
         forgot password?
       </DialogTrigger>
-      <DialogContent className="h-70 flex flex-col justify-center items-center">
+      <DialogContent className="h-70 flex flex-col justify-center items-center border-0 sm:px-x-4 px-2">
         <DialogHeader className="bg-red">
-          <DialogTitle>You forgot password?</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-sm">You forgot password?</DialogTitle>
+          <DialogDescription className="text-sm">
             Enter your email in the input below
           </DialogDescription>
         </DialogHeader>
-        <div>
+        <div className="sm:w-auto w-full ">
           <div>
-            <p>email</p>
-            <Input type="email" {...register("email", { required: true })} className="signInputs" />
+            <p className="text-sm">email</p>
+            <Input type="email" {...register("email", { required: true })} className="signInputs text-sm" />
           </div>
           {errors.email && (
           <span className="text-red-500 text-sm ">This field is required</span>
@@ -69,7 +69,7 @@ export default function ForgotPasswordMoadal() {
            disabled={!allFilled || loading}
           onClick={handleSubmit(onSubmit)}
             variant="outline"
-            className="w-100 bg-[var(--mygreen)] text-white mt-10"
+            className="sm:w-100 w-full bg-[var(--mygreen)] text-white mt-10"
           >
            
             {loading ? <Loading color="white" /> : " submit"}
