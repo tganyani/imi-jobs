@@ -47,7 +47,7 @@ export default function ForgotPasswordMoadal() {
     };
   return (
     <Dialog>
-      <DialogTrigger className="text-[var(--mygreen)] mt-2 text-sm">
+      <DialogTrigger className="text-[var(--mygreen)] mt-2 text-sm font-bold">
         forgot password?
       </DialogTrigger>
       <DialogContent className="h-70 flex flex-col justify-center items-center border-0 sm:px-x-4 px-2">

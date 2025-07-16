@@ -15,9 +15,10 @@ type Inputs = {
 };
 
 import { socket } from "@/lib/socket";
+import GoogleButton from "@/components/googleBtn";
 
 export default function Login() {
-  
+ 
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
   const { login } = useAuthStore();
@@ -53,7 +54,7 @@ export default function Login() {
   };
   if (!hasHydrated) return null;
   return (
-    <div className="flex flex-col justify-center items-center min-h-screen ">
+    <div className="flex flex-col justify-center items-center min-h-screen space-y-2 ">
       <p className="">
         Log in to <span className="text-[var(--mygreen)] ">Imisebenzi</span>
       </p>
@@ -84,17 +85,18 @@ export default function Login() {
           disabled={!allFilled || loading}
           onClick={handleSubmit(onSubmit)}
           variant="outline"
-          className="sm:w-100  w-full bg-[var(--mygreen)] text-white mt-6"
+          className="sm:w-100  w-full bg-[var(--mygreen)] text-white mt-6 font-bold"
         >
           {loading ? <Loading color="white" /> : "login"}
         </Button>
         <div className="flex flex-row justify-center  gap-x-6 items-center mt-6">
-          <p className="text-sm">Don`t have account?</p>{" "}
-          <Button onClick={()=>router.push("/signup")}variant="link" className="text-[var(--mygreen)]">
+          <p className="text-sm font-bold">Don`t have account?</p>{" "}
+          <Button onClick={()=>router.push("/signup")}variant="link" className="text-[var(--mygreen)] font-bold">
             register
           </Button>
         </div>
       </div>
+     <GoogleButton/>
     </div>
   );
 }

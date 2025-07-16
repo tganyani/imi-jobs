@@ -13,6 +13,7 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import Loading from "@/components/loading";
+import GoogleButton from "@/components/googleBtn";
 
 type Inputs = {
   password: string;
@@ -120,18 +121,19 @@ export default function Register() {
           disabled={!allFilled || !matchedPassword || loading}
           onClick={handleSubmit(onSubmit)}
           variant="outline"
-          className="sm:w-100 w-full bg-[var(--mygreen)] text-white mt-6"
+          className="sm:w-100 w-full bg-[var(--mygreen)] text-white mt-6 font-bold"
         >
           {" "}
           {loading ? <Loading color="white" /> : "register"}
         </Button>
         <div className="flex flex-row justify-center gap-x-6 items-center mt-6">
-          <p className="text-sm">Already have account?</p>{" "}
-          <Button onClick={()=>router.push("/signin")} variant="link" className="text-[var(--mygreen)]">
+          <p className="text-sm font-bold">Already have account?</p>{" "}
+          <Button onClick={()=>router.push("/signin")} variant="link" className="text-[var(--mygreen)] font-bold">
             login
           </Button>
         </div>
       </div>
+      <GoogleButton/>
     </div>
   );
 }
