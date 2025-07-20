@@ -96,12 +96,12 @@ export default function EditSkillMoadal({ skills }: { skills: Skill[] }) {
       <DialogTrigger className="flex  flex-row items-center justify-center w-6 h-6 rounded-full border-2 border-[var(--mygreen)]">
         <Pencil className="h-3 w-3 text-[var(--mygreen)]" />
       </DialogTrigger>
-      <DialogContent className="flex flex-col  justify-center items-center ">
+      <DialogContent className="flex flex-col border-0  justify-center items-center max-h-screen max-w-screen sm:max-w-150 p-2 sm:p-4">
         <DialogHeader className="w-full ">
-          <DialogTitle>Edit ?</DialogTitle>
+          <DialogTitle className="text-sm">Edit ?</DialogTitle>
           <DialogDescription>Add or delete skill</DialogDescription>
         </DialogHeader>
-        <div className="w-full max-h-[90vh] overflow-y-auto">
+        <div className="w-full  overflow-y-auto">
           <div className="min-h-30 border-1 flex flex-row flex-wrap gap-2 justify-between  border-stone-400 p-2 rounded-xl">
             {skills.map((skill: Skill) => (
               <div
@@ -120,8 +120,8 @@ export default function EditSkillMoadal({ skills }: { skills: Skill[] }) {
             ))}
           </div>
           <div>
-            <p>skill title</p>
-            <Input {...register("title", { required: true })} />
+            <p className="text-sm">skill title</p>
+            <Input {...register("title", { required: true })} className="focus-visible:ring-1"/>
           </div>
           {errors.title && (
             <span className="text-red-500 text-sm ">
@@ -129,7 +129,7 @@ export default function EditSkillMoadal({ skills }: { skills: Skill[] }) {
             </span>
           )}
           <div>
-            <p>experience level</p>
+            <p className="text-sm">experience level</p>
             <Controller
               name="level"
               control={control}

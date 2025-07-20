@@ -23,7 +23,7 @@ import EditVaccancy from "@/components/editVaccancy";
 dayjs.extend(relativeTime);
 
 export default function Vaccancy() {
-  const { userId,isLoggedIn } = useAuthStore() 
+  const { userId, isLoggedIn } = useAuthStore();
   const { vaccancyId } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
   const { data, error, isLoading, mutate } = useSWR(
@@ -163,14 +163,17 @@ export default function Vaccancy() {
         </div>
       </div>
       {/* about company */}
-      <div className=" border-1 border-stone-300 rounded-sm p-2">
-        <div
-          className="ql-editor text-sm text-gray-600  "
-          dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(data?.user?.companyInfo as string),
-          }}
-        ></div>
-      </div>
+      {data?.user?.companyInfo && (
+        <div className=" border-1 border-stone-300 rounded-sm p-2">
+          <div
+            className="ql-editor text-sm text-gray-600  "
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(data?.user?.companyInfo as string),
+            }}
+          ></div>
+        </div>
+      )}
+
       <div className="min-h-screen border-1 border-stone-300 rounded-sm p-2">
         {/* <p>Job info</p> */}
         <div
@@ -188,14 +191,14 @@ export default function Vaccancy() {
             <div className="flex flex-row flex-nowrap min-w-25 justify-between text-sm items-center border-1 rounded-full py-1 px-2 border-stone-200">
               <div className="flex flex-row flex-nowrap  items-center truncate text-ellipsis overflow-hidden whitespace-nowrap">
                 <Users className="h-4 w-4 text-gray-400" />
-                {data?.nApplications} 
+                {data?.nApplications}
               </div>
               <p> applied</p>
             </div>
             <div className="flex flex-row flex-nowrap min-w-25 justify-between text-sm items-center border-1 rounded-full py-1 px-2 border-stone-200">
               <div className="flex flex-row flex-nowrap  items-center truncate text-ellipsis overflow-hidden whitespace-nowrap">
                 <Eye className="h-4 w-4 text-gray-400" />
-                {data?.nViews} 
+                {data?.nViews}
               </div>
               <p> viewed</p>
             </div>
@@ -203,8 +206,8 @@ export default function Vaccancy() {
           <p className="text-sm ">posted {dayjs(data?.updatedAt).fromNow()}</p>
         </div>
       </div>
-      {userId ===data?.user?.id ? (
-        <EditVaccancy job={data} byId={true}/>
+      {userId === data?.user?.id ? (
+        <EditVaccancy job={data} byId={true} />
       ) : (
         <div className="flex flex-row items-center gap-x-6 flex-wrap-reverse gap-y-4">
           <ApplyModal
@@ -225,40 +228,40 @@ export default function Vaccancy() {
             batchSize={5}
             isSmallScreen={false}
           />
-         {
-          isLoggedIn&& <Button
-            variant="outline"
-            size="sm"
-            className={
-              data.likes.filter(
+          {isLoggedIn && (
+            <Button
+              variant="outline"
+              size="sm"
+              className={
+                data.likes.filter(
+                  (like: { userId: string }) => like?.userId === userId
+                )?.length > 0
+                  ? "w-60 text-green-500 border-2 [@media(max-width:480px)]:w-full"
+                  : " w-60 text-[var(--mygreen)] [@media(max-width:480px)]:w-full"
+              }
+              onClick={
+                data.likes?.filter(
+                  (like: { userId: string }) => like?.userId === userId
+                )?.length > 0
+                  ? () => handleDisLike(data.id)
+                  : () => handleLike(data.id)
+              }
+            >
+              {data.likes?.filter(
                 (like: { userId: string }) => like?.userId === userId
-              )?.length > 0
-                ? "w-60 text-green-500 border-2 [@media(max-width:480px)]:w-full"
-                : " w-60 text-[var(--mygreen)] [@media(max-width:480px)]:w-full"
-            }
-            onClick={
-              data.likes?.filter(
-                (like: { userId: string }) => like?.userId === userId
-              )?.length > 0
-                ? () => handleDisLike(data.id)
-                : () => handleLike(data.id)
-            }
-          >
-            {data.likes?.filter(
-              (like: { userId: string }) => like?.userId === userId
-            )?.length > 0 ? (
-              <CircleCheck className="text-green-500" />
-            ) : (
-              <Heart className="text-[var(--mygreen)]" />
-            )}
+              )?.length > 0 ? (
+                <CircleCheck className="text-green-500" />
+              ) : (
+                <Heart className="text-[var(--mygreen)]" />
+              )}
 
-            {data.likes.filter(
-              (like: { userId: string }) => like?.userId === userId
-            )?.length > 0
-              ? "reserved"
-              : "reserve job"}
-          </Button>
-         }
+              {data.likes.filter(
+                (like: { userId: string }) => like?.userId === userId
+              )?.length > 0
+                ? "reserved"
+                : "reserve job"}
+            </Button>
+          )}
           <FlagJob />
         </div>
       )}

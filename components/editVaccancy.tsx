@@ -110,16 +110,16 @@ export default function EditVaccancy({
           <Pencil className="h-3 w-3 text-[var(--mygreen)]" />
         </SheetTrigger>
       )}
-      <SheetContent className="border-none sm:max-w-screen md:w-[90%]  w-full max-h-screen overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="text-center">
+      <SheetContent className="border-none sm:max-w-screen md:w-[90%]  w-full max-h-screen ">
+        <SheetHeader className="">
+          <SheetTitle className="text-center text-sm ">
             Are you sure! you want to edit?
           </SheetTitle>
           <VisuallyHidden>
             <SheetDescription></SheetDescription>
           </VisuallyHidden>
         </SheetHeader>
-        <div className="flex flex-col  justify-center items-center  mb-10 ">
+        <div className="flex flex-col  justify-center items-center pt-120 sm:pt-70  pb-4 overflow-y-auto ">
           <div className="sm:w-150 w-98/100 space-y-4 ">
             <div className="vaccancyInputdiv2 gap-y-4">
               <div>

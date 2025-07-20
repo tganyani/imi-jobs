@@ -1,7 +1,8 @@
 "use client"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation'
 import { useForm, SubmitHandler} from "react-hook-form";
+import { useResendStore } from "@/stores/resendCodeStore";
 import {
   Dialog,
   DialogContent,
@@ -14,21 +15,29 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import Loading from "./loading";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
-type Inputs = {
-  email: string;
-};
+const formSchema = z.object({
+  email: z.string().trim().min(1,"email is required").email("invalid email address")
+})
+
+type Inputs = z.infer<typeof formSchema>
 
 
 export default function ForgotPasswordMoadal() {
   const [loading, setLoading] = useState<boolean>(false);
+  const {setTriggerOnMount} = useResendStore()
+  const [logError, setLogError] = useState<string>("")
     const router = useRouter();
     const {
       register,
       handleSubmit,
       watch,
       formState: { errors },
-    } = useForm<Inputs>();
+    } = useForm<Inputs>({
+      resolver:zodResolver(formSchema)
+    });
     const values = watch();
     const allFilled = Object.values(values).every(
       (val) => val && val.trim() !== ""
@@ -38,13 +47,18 @@ export default function ForgotPasswordMoadal() {
       await axios
         .post("/api/fpassword", data)
         .then(({ data }) => {
+          setLogError(data?.error)
           if (data.codeSend) {
             router.push(`/verify?email=${encodeURIComponent(data?.email)}&fpassword=${encodeURIComponent(true)}`)
+            setTriggerOnMount(true)
           }
         })
         .catch((err) => console.error(err));
       setLoading(false);
     };
+    useEffect(()=>{
+      setLogError("")
+    },[values.email])
   return (
     <Dialog>
       <DialogTrigger className="text-[var(--mygreen)] mt-2 text-sm font-bold">
@@ -58,13 +72,16 @@ export default function ForgotPasswordMoadal() {
           </DialogDescription>
         </DialogHeader>
         <div className="sm:w-auto w-full ">
-          <div>
+          <p className="text-red-500 text-sm ">{logError}</p>
+          <div className="">
             <p className="text-sm">email</p>
             <Input type="email" {...register("email", { required: true })} className="signInputs text-sm" />
           </div>
-          {errors.email && (
-          <span className="text-red-500 text-sm ">This field is required</span>
+          <div>
+            {errors.email && (
+          <span className="text-red-500 text-sm ">{errors.email.message}</span>
         )}
+          </div>
           <Button
            disabled={!allFilled || loading}
           onClick={handleSubmit(onSubmit)}

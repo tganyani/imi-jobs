@@ -17,17 +17,14 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 import Loading from "./loading";
-import { generateRoomName } from "@/lib/constant";
+import { generateRoomName, NotificationType } from "@/lib/constant";
 import { toast } from "sonner";
 
 // import { getSocket } from "@/lib/socket";
-
+import { socket } from "@/lib/socket";
 type Inputs = {
   coverLetter: string;
 };
-
-// const socket = getSocket();
-import { socket } from "@/lib/socket";
 
 export function ApplyModal({
   job,
@@ -54,10 +51,12 @@ export function ApplyModal({
   const [loading, setLoading] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const [letter, setLetter] = useState<string>("");
-  const { userId, email, isLoggedIn } = useAuthStore() as {
+
+  const { userId, email, isLoggedIn, name } = useAuthStore() as {
     userId: string;
     email: string;
     isLoggedIn: boolean;
+    name: string;
   };
   const {
     reset,
@@ -69,17 +68,17 @@ export function ApplyModal({
 
   useEffect(() => {
     const fetchLetter = async () => {
-      if(isLoggedIn){
+      if (isLoggedIn) {
         await axios
-        .get(`/api/vaccancy/letter?userId=${userId}`)
-        .then(({ data }) => {
-          setLetter(data?.coverLetter);
-        })
-        .catch((err) => console.error(err));
+          .get(`/api/vaccancy/letter?userId=${userId}`)
+          .then(({ data }) => {
+            setLetter(data?.coverLetter);
+          })
+          .catch((err) => console.error(err));
       }
     };
     fetchLetter();
-  }, [userId,open]);
+  }, [userId, open]);
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
     await axios
@@ -95,10 +94,18 @@ export function ApplyModal({
 
         ids: [job.userId, userId],
       })
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (data?.created) {
           socket?.emit("sendMessage", {
-            message: watch("coverLetter"),
+            message: `<h6 style="color: #2e7d32;">Job Application from ${name} for ${
+              job.title
+            } position</h6> <br/>${watch(
+              "coverLetter"
+            )}<br/>, here is my profile <br/>
+            https://www.imisebenzi.co.zw/vaccancy/posted/${
+              job.id
+            }/${userId}
+            `,
             userId,
             name: data.roomName,
             roomId: data.roomId,
@@ -115,6 +122,16 @@ export function ApplyModal({
               </Button>
             ),
           });
+          await axios
+            .post("/api/vaccancy/notif", {
+              toId: job.userId,
+              targetId: data.roomName,
+              type: NotificationType.application,
+              isCandidate: false,
+              fromName: name,
+            })
+            .catch((err) => console.error(err));
+          socket?.emit("notif", { roomName: data.roomName });
           mutate(
             `/api/vaccancy?title=${searchTerms.title}&city=${
               openFilter || !isSmallScreen ? searchTerms.city : ""
@@ -122,8 +139,9 @@ export function ApplyModal({
               openFilter || !isSmallScreen ? searchTerms.country : ""
             }&batch=${batch * batchSize}`
           );
+          mutate(`/api/vaccancy/like?userId=${userId}`)
           mutate(`/api/vaccancy/${job.id}`);
-          setTimeout(() => setOpen(false), 4000);
+          setTimeout(() => setOpen(false), 2000);
         }
       })
       .catch((err) => console.error(err));
@@ -200,7 +218,7 @@ export function ApplyModal({
               variant="outline"
               size="sm"
               className="bg-[var(--mygreen)] w-60 text-white border-none [@media(max-width:480px)]:w-full"
-              onClick={()=>router.push("/signin")}
+              onClick={() => router.push("/signin")}
             >
               login
             </Button>

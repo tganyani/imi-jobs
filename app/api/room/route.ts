@@ -11,6 +11,9 @@ export async function GET(req: NextRequest) {
       },
       select: {
         rooms: {
+          orderBy:{
+            dateUpdated:"desc"
+          },
           include: {
             _count: {
               select: {
@@ -44,6 +47,7 @@ export async function GET(req: NextRequest) {
               select: {
                 name: true,
                 image: true,
+                id:true
               },
             },
           },
@@ -64,33 +68,27 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// export async function POST(req: NextRequest) {
-//   try {
-//     const body = await req.json();
-//     const room = await prisma.room.upsert({
-//       where: {
-//         name: body.name,
-//       },
-//       update: {
-//         dateUpdated: new Date(),
-//       },
-//       create: {
-//         name: body.name,
-//         users: {
-//           connect: body.ids.map((id: string) => ({ id })),
-//         },
-//       },
-//     });
-//     await prisma.chat.create({
-//       data: {
-//         message: body.message,
-//         roomId: room.id,
-//         userId: body.userId,
-//       },
-//     });
-//     return Response.json({ created: true, id: room.id });
-//   } catch (err) {
-//     console.error(err);
-//     return Response.json({ error: "error" }, { status: 500 });
-//   }
-// }
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const room = await prisma.room.upsert({
+      where: {
+        name: body.name,
+      },
+      update: {
+        dateUpdated: new Date(),
+      },
+      create: {
+        name: body.name,
+        users: {
+          connect: body.ids.map((id: string) => ({ id })),
+        },
+      },
+    });
+   
+    return Response.json({ created: true, id: room.id ,name:room.name});
+  } catch (err) {
+    console.error(err);
+    return Response.json({ error: "error" }, { status: 500 });
+  }
+}

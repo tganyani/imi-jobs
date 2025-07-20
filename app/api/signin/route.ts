@@ -11,10 +11,11 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.findUnique({
       where: {
         email,
+        verified:true
       },
     });
     if (!user)
-      return Response.json({ error: "User not Registered" }, { status: 400 });
+      return Response.json({ error: "User not Registered" });
     const compare = await bcrypt.compare(password, user.password);
     if (compare) {
       const access_token = jsonwebtoken.sign(
@@ -47,10 +48,12 @@ export async function POST(req: NextRequest) {
       return Response.json({
         id: user.id,
         email: user.email,
+        name:user.name,
         role: user.role,
         logged: true,
         access_token,
         refresh_token,
+        error:""
       });
     }
     return Response.json({ error: "Wrong email or pasword" });

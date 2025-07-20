@@ -1,7 +1,12 @@
 "use client";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ApplicationStatus, fetcher, generateRoomName } from "@/lib/constant";
+import {
+  ApplicationStatus,
+  fetcher,
+  generateRoomName,
+  NotificationType,
+} from "@/lib/constant";
 import useSWR from "swr";
 import Loading from "@/components/loading";
 import { Candidate, Edu, Employ, Language, Project, Skill } from "@/lib/types";
@@ -27,7 +32,8 @@ import axios from "axios";
 import { useAuthStore } from "@/stores/authStore";
 dayjs.extend(relativeTime);
 
-import { socket } from "@/lib/socket";
+import {socket} from "@/lib/socket"
+
 
 export default function ViewUser() {
   const { viewUserId } = useParams();
@@ -35,6 +41,7 @@ export default function ViewUser() {
   const router = useRouter();
   const { postedId: vaccancyId } = useParams() as { postedId: string };
   const { email, userId } = useAuthStore() as { userId: string; email: string };
+  
   const { data, error, isLoading, mutate } = useSWR<Candidate>(
     `/api/vaccancy/applicants/${viewUserId}?vaccancyId=${vaccancyId}`,
     fetcher
@@ -50,20 +57,21 @@ export default function ViewUser() {
     }
   };
   const handlePropose = async () => {
+    const companyName = data?.name;
     await mutate(
       data
         ? { ...data, jobsProposed: [{ ...data.jobsProposed[0], vaccancyId }] }
         : undefined,
       false
     );
-    const message = `<h6 style="color: #2e7d32;">Job Offer Proposal</h6> <br/>You have recived a job proposal from for this postion  https://imi-jobs.vercel.app/vaccancy/${vaccancyId}`;
+    const message = `<h6 style="color: #2e7d32;">Job Offer Proposal</h6> <br/>You have recived a job proposal from for this postion  https://www.imisebenzi.co.zw/vaccancy/${vaccancyId}`;
     const roomData = {
       name: generateRoomName(email as string, data?.email as string),
       ids: [userId, viewUserId],
     };
     await axios
       .post(`/api/candidate`, { vaccancyId, userId: viewUserId, roomData })
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (data.proposed) {
           socket?.emit("sendMessage", {
             message,
@@ -71,6 +79,15 @@ export default function ViewUser() {
             name: data?.roomName,
             roomId: data?.roomId,
           });
+          await axios
+            .post("/api/vaccancy/notif", {
+              toId: viewUserId,
+              targetId: data?.roomId,
+              type: NotificationType.proposal,
+              isCandidate: true,
+              fromName: companyName,
+            })
+            .catch((err) => console.error(err));
           toast("Candidate successfully proposed ", {
             description: "You can continue to the chats ",
             action: (
@@ -94,6 +111,7 @@ export default function ViewUser() {
     name: string,
     roomId: string
   ) => {
+    const companyName = data?.name;
     await mutate(
       data
         ? { ...data, jobsApplied: [{ ...data.jobsApplied[0], status }] }
@@ -102,22 +120,40 @@ export default function ViewUser() {
     );
     await axios
       .patch(`/api/vaccancy/applicants/${id}`, { status })
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (data?.updated) {
           if (status === ApplicationStatus.invited) {
             socket?.emit("sendMessage", {
-              message: `<h6 style="color: #2e7d32;">Interview Invitation</h6> <br/>You have recieved an invitation for this position  https://imi-jobs.vercel.app/vaccancy/${vaccancyId}`,
+              message: `<h6 style="color: #2e7d32;">Interview Invitation</h6> <br/>You have recieved an invitation for this position  https://www.imisebenzi.co.zw/vaccancy/${vaccancyId}`,
               userId,
               name,
               roomId,
             });
+            await axios
+              .post("/api/vaccancy/notif", {
+                toId: viewUserId,
+                targetId: data?.roomId,
+                type: NotificationType.invitation,
+                isCandidate: true,
+                fromName: companyName,
+              })
+              .catch((err) => console.error(err));
           } else {
             socket?.emit("sendMessage", {
-              message: `<h6 style="color: #c62828;">Application Rejected</h6> <br/>You have recieved an application rejection for this position  https://imi-jobs.vercel.app/vaccancy/${vaccancyId}`,
+              message: `<h6 style="color: #c62828;">Application Rejected</h6> <br/>You have recieved an application rejection for this position  https://www.imisebenzi.co.zw/vaccancy/${vaccancyId}`,
               userId,
               name,
               roomId,
             });
+            await axios
+              .post("/api/vaccancy/notif", {
+                toId: viewUserId,
+                targetId: data?.roomId,
+                type: NotificationType.rejection,
+                isCandidate: true,
+                fromName: companyName,
+              })
+              .catch((err) => console.error(err));
           }
         }
       })

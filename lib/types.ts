@@ -48,6 +48,7 @@ export type Applicant = {
   userId: string;
   roomId: string;
   roomName: string;
+  companyName: string;
 };
 
 export type ViewJob = JobInputs & {
@@ -176,4 +177,15 @@ export type Language = {
   id: string;
   name: string;
   level: string;
+};
+
+export type NotificationTyped = {
+  fromName: string;
+  targetId: string;
+  toId: string;
+  isCandidate: boolean;
+  read: boolean;
+  type: string;
+  id: string;
+  createdAt: string;
 };

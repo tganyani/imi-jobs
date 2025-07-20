@@ -1,6 +1,7 @@
 'use client';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation'
+import { useResendStore } from "@/stores/resendCodeStore";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -14,17 +15,23 @@ import { Button } from "@/components/ui/button";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import Loading from "@/components/loading";
 import GoogleButton from "@/components/googleBtn";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
-type Inputs = {
-  password: string;
-  confirmpassword: string;
-  name: string;
-  email: string;
-  role: string;
-};
+const formSchema = z.object({
+  password: z.string().trim().min(6,"password must be at least 6 characters"),
+  confirmpassword: z.string(),
+  name: z.string().min(1,"name is required"),
+  email: z.string().trim().min(1,"email is required").email("invalid email address"),
+  role: z.string()
+})
+
+type Inputs = z.infer<typeof formSchema>
 
 export default function Register() {
+  const {setTriggerOnMount} = useResendStore()
   const [loading, setLoading] = useState<boolean>(false);
+  const [logError, setLogError] = useState<string>("")
   const router = useRouter();
   const {
     register,
@@ -32,7 +39,9 @@ export default function Register() {
     watch,
     control,
     formState: { errors },
-  } = useForm<Inputs>();
+  } = useForm<Inputs>({
+    resolver:zodResolver(formSchema)
+  });
   const values = watch();
   const allFilled = Object.values(values).every(
     (val) => val && val.trim() !== ""
@@ -43,7 +52,9 @@ export default function Register() {
     await axios
       .post("/api/signup", data)
       .then(({ data }) => {
+        setLogError(data?.err)
         if (data.created) {
+          setTriggerOnMount(true)
           router.push(`/verify?email=${encodeURIComponent(data?.email)}`)
         }
       })
@@ -51,12 +62,17 @@ export default function Register() {
     setLoading(false);
   };
 
+  useEffect(()=>{
+    setLogError("")
+  },[values.email])
+
   return (
     <div className="flex flex-col justify-center items-center min-h-screen ">
       <p>
         Register to <span className="text-[var(--mygreen)] ">Imisebenzi</span>
       </p>
       <div className="sm:w-auto w-full px-2">
+        <p className="text-sm text-red-500">{logError}</p>
         <div>
           <p className="text-sm">name</p>
           <Input
@@ -66,7 +82,7 @@ export default function Register() {
           />
         </div>
         {errors.name && (
-          <span className="text-red-500 text-sm ">This field is required</span>
+          <span className="text-red-500 text-sm ">{errors.name.message}</span>
         )}
         <div>
           <p className="text-sm">email</p>
@@ -76,6 +92,9 @@ export default function Register() {
             className="signInputs text-sm"
           />
         </div>
+        {errors.email && (
+          <span className="text-red-500 text-sm ">{errors.email.message}</span>
+        )}
         <div className="">
           <p className="text-sm">account type</p>
           <Controller
@@ -103,6 +122,9 @@ export default function Register() {
             className="signInputs"
           />
         </div>
+        {errors.password && (
+          <span className="text-red-500 text-sm ">{errors.password.message}</span>
+        )}
         <div>
           <p className="text-sm">confirm password</p>
           <Input

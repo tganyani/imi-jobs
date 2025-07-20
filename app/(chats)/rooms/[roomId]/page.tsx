@@ -22,6 +22,7 @@ import {
 import throttle from "lodash/throttle";
 import { useEffect, useState } from "react";
 import Loading from "@/components/loading";
+import { LoaderCircle } from "lucide-react"
 import {
   fetcher,
   formatFileSize,
@@ -34,14 +35,16 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import axios from "axios";
 dayjs.extend(localizedFormat);
 
-import { socket } from "@/lib/socket";
 import RoomPopover from "@/components/roomPopover";
+import { socket } from "@/lib/socket";
+import CheckAccess from "@/components/checkAccess";
 
 export default function Room() {
   const router = useRouter();
-  const { userId } = useAuthStore() as { userId: string };
+  const { userId ,isLoggedIn} = useAuthStore() as { userId: string ,isLoggedIn:boolean};
   const { roomId } = useParams() as { roomId: string };
   const [message, setMessage] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const scrollMessage = useRef<null | HTMLDivElement>(null);
   const [files, setFiles] = useState<File[]>([]);
@@ -66,6 +69,14 @@ export default function Room() {
     },
     multiple: true,
   });
+
+  // const handleTyping = (data: { userId: string }) => {
+  //     if (data.userId === userId) {
+  //       setIsTyping(true);
+  //       setTimeout(() => setIsTyping(false), 10000);
+  //     }
+  //   };
+
   useEffect(() => {
     const handleNewMessage = async (id: string) => {
       await mutate();
@@ -84,10 +95,6 @@ export default function Room() {
     const handleMutate = () => {
       mutate();
     };
-    const handleTyping = () => {
-      setIsTyping(true);
-      setTimeout(() => setIsTyping(false), 10000);
-    };
 
     socket?.on("connect", handleConnect);
     socket?.on("newMessage", handleNewMessage);
@@ -95,17 +102,22 @@ export default function Room() {
     socket?.on("refreshRead", handleMutate);
     socket?.emit("read", { userId, roomId });
     socket?.emit("joinRooms", userId as string);
-    socket.on("userTyping", handleTyping);
-    socket.on("userOffline", handleMutate);
-    socket.on("userOnline", handleMutate);
+    socket?.on("userTyping", (data) => {
+      if (data.userId !== userId) {
+        setIsTyping(true);
+        setTimeout(() => setIsTyping(false), 3000);
+      }
+    });
+    socket?.on("userOffline", handleMutate);
+    socket?.on("userOnline", handleMutate);
 
     return () => {
       socket?.off("newMessage", handleNewMessage);
       socket?.off("connect", handleConnect);
       socket?.off("refreshDelivered", handleMutate);
-      socket.off("refreshRead", handleMutate);
-      socket.off("userOnline", handleMutate);
-      socket.off("userOffline", handleMutate);
+      socket?.off("refreshRead", handleMutate);
+      socket?.off("userOnline", handleMutate);
+      socket?.off("userOffline", handleMutate);
       // socket.off("userTyping",handleTyping)
     };
   }, []);
@@ -117,11 +129,11 @@ export default function Room() {
     });
   }, [data]);
 
+  const throttledTyping = throttle(() => {
+    socket?.emit("typing", { roomName: data?.name as string, userId });
+  }, 3000);
   useEffect(() => {
-    const throttledTyping = throttle(() => {
-      socket.emit("typing", { roomName: data?.name as string });
-    }, 10000);
-    return throttledTyping();
+    throttledTyping();
   }, [message]);
 
   const handlesendMessage = async () => {
@@ -153,7 +165,7 @@ export default function Room() {
 
     if (data) {
       if (files.length > 0) {
-        socket.emit(
+        socket?.emit(
           "sendMessageWithMedia",
           {
             name: data?.name,
@@ -163,18 +175,20 @@ export default function Room() {
           },
           async ({ chatId }) => {
             if (chatId) {
+              setLoading(true);
               const formData = new FormData();
               files.forEach((file) => formData.append("files", file));
               formData.append("chatId", chatId);
               await axios
                 .post("/api/chat", formData)
                 .then((res) => {
-                  socket.emit("refreshMedia", { roomName: data.name });
+                  socket?.emit("refreshMedia", { roomName: data.name });
                   setFiles([]);
 
                   return res.data;
                 })
                 .catch((err) => console.error(err));
+              setLoading(false);
             }
           }
         );
@@ -197,6 +211,9 @@ export default function Room() {
   if (!data && !isLoading) return null;
   return (
     <div className="h-screen flex flex-col ">
+      {
+        isLoggedIn&&<CheckAccess/>
+      }
       {/* header */}
       <div className="sticky top-0 p-2 bg-white shadow-stone-100 shadow-sm sm:border-1 sm:border-stone-200">
         <div className="flex flex-row flex-nowrap justify-between items-center">
@@ -238,7 +255,7 @@ export default function Room() {
         {isLoading ? (
           <Loading color="grey" />
         ) : (
-          data?.chats.map((chat: Chat, index: number) => (
+          data?.chats?.map((chat: Chat, index: number) => (
             <div key={chat.id}>
               <div className="flex justify-center">
                 {index > 0 &&
@@ -264,11 +281,13 @@ export default function Room() {
                   {chat.media.map((md) => (
                     <div key={md.publicId}>
                       {isImageFile(md.url) ? (
-                        <img
+                        <a href={md.url} download>
+                          <img
                           src={md.url}
                           alt={md.originalName}
                           className="max-w-50 max-h-50 rounded-lg"
                         />
+                        </a>
                       ) : (
                         <div className="flex flex-nowrap items-center">
                           <File className="h-4 w-4 text-gray-500" />
@@ -328,10 +347,14 @@ export default function Room() {
                 key={URL.createObjectURL(file)}
                 className="relative w-20 mb-2 h-20 border-1 border-gray-300 rounded-sm"
               >
-                <CircleX
-                  onClick={() => removeFile(file.name)}
-                  className="h-4 w-4 text-[var(--mygreen)] hover:text-red-500 absolute top-0 z-2 right-0"
-                />
+                {loading ? (
+                  <LoaderCircle className="h-w w-4 text-[var(--mygreen)] animate-spin absolute top-0 z-2 right-0"/>
+                ) : (
+                  <CircleX
+                    onClick={() => removeFile(file.name)}
+                    className="h-4 w-4 text-[var(--mygreen)] hover:text-red-500 absolute top-0 z-2 right-0"
+                  />
+                )}
                 {file.type.startsWith("image/") ? (
                   <Image
                     src={URL.createObjectURL(file)}
@@ -366,7 +389,9 @@ export default function Room() {
           </div>
           <Input
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => {
+              setMessage(e.target.value);
+            }}
             placeholder={files.length > 0 ? "add caption" : "type something"}
             className="min-h-8 rounded-full text-sm focus-visible:ring-0 focus-visible:border-gray-300 border-stone-300"
             onKeyDown={(e) => {
@@ -375,7 +400,7 @@ export default function Room() {
               }
             }}
           />
-          {message && (
+          {(message || files.length>0)&&!loading && (
             <div
               onClick={handlesendMessage}
               className="p-2 border-1 border-gray-300 rounded-full flex items-center justify-center"

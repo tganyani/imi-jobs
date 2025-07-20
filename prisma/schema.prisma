@@ -190,6 +190,7 @@ model Notification {
   targetId    String
   type        NotificationType
   isCandidate Boolean
+  read Boolean @default(false)
   createdAt   DateTime         @default(now())
 }
 
@@ -197,6 +198,7 @@ enum NotificationType {
   invitation
   rejection
   proposal
+  application
 }
 
 model Chat {

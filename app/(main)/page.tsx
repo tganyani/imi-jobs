@@ -29,9 +29,6 @@ import { useState } from "react";
 import FlagJob from "@/components/flagJob";
 dayjs.extend(relativeTime);
 
-// import { getSocket } from "@/lib/socket";
-
-// const socket = getSocket();
 
 export default function Home() {
   const batchSize = 5;
@@ -113,7 +110,9 @@ export default function Home() {
 
   return (
     <div className="p-2">
-      <CheckAccess />
+      {
+        isLoggedIn&&<CheckAccess />
+      }
       <p className="my-2">Jobs</p>
       <div className="flex lg:flex-row gap-y-8 gap-x-4 flex-col-reverse">
         {error && <div>error fetching</div>}

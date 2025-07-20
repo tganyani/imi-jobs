@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
     // });
     return NextResponse.redirect(
       new URL(
-        `/gglesuccess?email=${user.email}&id=${user.id}&role=${user.role}&logged=true`,
+        `/gglesuccess?email=${user.email}&id=${user.id}&role=${user.role}&logged=true&name=${user.name}`,
         req.url
       )
     );

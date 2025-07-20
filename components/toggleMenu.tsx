@@ -1,5 +1,6 @@
 "use client";
 import { useMediaQuery } from "react-responsive";
+import { usePathname } from "next/navigation";
 import {
   Drawer,
   DrawerContent,
@@ -25,19 +26,21 @@ import {
   X,
 } from "lucide-react";
 import { Role } from "@/lib/constant";
+import { Badge } from "./ui/badge";
 
-export default function ToggleMenu() {
+export default function ToggleMenu({ unReadLenght }: { unReadLenght: number }) {
+  const pathname = usePathname();
   const navIconStyle = "h-4 w-4";
   const { isLoggedIn, role } = useAuthStore();
   const [hasHydrated, setHasHydrated] = useState(false);
   const [open, setOpen] = useState(false);
 
-const isSmallScreen = useMediaQuery({ minWidth: 640 });
+  const isSmallScreen = useMediaQuery({ minWidth: 640 });
   // Make sure zustand store is hydrated before accessing (Next.js SSR safe)
   useEffect(() => {
     setHasHydrated(true);
   }, []);
-   useEffect(() => {
+  useEffect(() => {
     if (isSmallScreen && open) {
       setOpen(false);
     }
@@ -58,8 +61,12 @@ const isSmallScreen = useMediaQuery({ minWidth: 640 });
         </DrawerClose>
         <div className="p-4 mt-10">
           <div className="flex flex-col items-center  mb-8">
-            <Link href="/"  onClick={()=>setOpen(false)}>
-              <div className="navItemsStyle">
+            <Link href="/" onClick={() => setOpen(false)}>
+              <div  className={`navItemsStyle ${
+                    pathname === "/"
+                      ? "text-[var(--mygreen)]"
+                      : ""
+                  }`}>
                 <p>jobs</p>
                 <Briefcase className={navIconStyle} />
               </div>
@@ -68,8 +75,12 @@ const isSmallScreen = useMediaQuery({ minWidth: 640 });
           {isLoggedIn && (
             <div className="flex flex-col items-center gap-y-8">
               {role === Role.candidate && (
-                <Link href="/vaccancy/saved" onClick={()=>setOpen(false)}>
-                  <div className="navItemsStyle">
+                <Link href="/vaccancy/saved" onClick={() => setOpen(false)}>
+                  <div  className={`navItemsStyle ${
+                    pathname === "/vaccancy/saved"
+                      ? "text-[var(--mygreen)]"
+                      : ""
+                  }`}>
                     <p>saved</p>
                     <Heart className={navIconStyle} />
                   </div>
@@ -77,24 +88,39 @@ const isSmallScreen = useMediaQuery({ minWidth: 640 });
               )}
 
               {role === Role.candidate && (
-                <Link href="/vaccancy/applied" onClick={()=>setOpen(false)}>
-                  <div className="navItemsStyle">
+                <Link href="/vaccancy/applied" onClick={() => setOpen(false)}>
+                  <div  className={`navItemsStyle ${
+                    pathname === "/vaccancy/applied"
+                      ? "text-[var(--mygreen)]"
+                      : ""
+                  }`}>
                     <p>applied</p>
                     <Luggage className={navIconStyle} />
                   </div>
                 </Link>
               )}
 
-              <Link href="/rooms" onClick={()=>setOpen(false)}>
+              <Link href="/rooms" onClick={() => setOpen(false)}>
                 <div className="navItemsStyle">
                   <p>chats</p>
-                  <MessageCircle className={navIconStyle} />
+                  <div className="relative ">
+                    <MessageCircle className={navIconStyle} />
+                    {unReadLenght > 0 && (
+                      <Badge className="absolute   top-[-4px]  right-[-14px] bg-[var(--mygreen)] text-white rounded-full text-[8px]">
+                        {unReadLenght}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </Link>
 
               {role === Role.recruiter && (
-                <Link href="/vaccancy/posted" onClick={()=>setOpen(false)}>
-                  <div className="navItemsStyle">
+                <Link href="/vaccancy/posted" onClick={() => setOpen(false)}>
+                  <div  className={`navItemsStyle ${
+                    pathname === "/vaccancy/posted"
+                      ? "text-[var(--mygreen)]"
+                      : ""
+                  }`}>
                     <p>posted</p>
                     <PackageCheck className={navIconStyle} />
                   </div>
@@ -102,8 +128,12 @@ const isSmallScreen = useMediaQuery({ minWidth: 640 });
               )}
 
               {role === Role.recruiter && (
-                <Link href="/vaccancy/post" onClick={()=>setOpen(false)}>
-                  <div className="navItemsStyle">
+                <Link href="/vaccancy/post" onClick={() => setOpen(false)}>
+                  <div  className={`navItemsStyle ${
+                    pathname === "/vaccancy/post"
+                      ? "text-[var(--mygreen)]"
+                      : ""
+                  }`}>
                     <p>add</p>
                     <PackagePlus className={navIconStyle} />
                   </div>
@@ -113,14 +143,22 @@ const isSmallScreen = useMediaQuery({ minWidth: 640 });
           )}
           {!isLoggedIn && (
             <div className="flex flex-col items-center gap-y-8">
-              <Link href="/signin" onClick={()=>setOpen(false)}>
-                <div className="navItemsStyle">
+              <Link href="/signin" onClick={() => setOpen(false)}>
+                <div  className={`navItemsStyle ${
+                    pathname === "/signin"
+                      ? "text-[var(--mygreen)]"
+                      : ""
+                  }`}>
                   <p>login</p>
                   <KeyRound className={navIconStyle} />
                 </div>
               </Link>
-              <Link href="/signup" onClick={()=>setOpen(false)}>
-                <div className="navItemsStyle">
+              <Link href="/signup" onClick={() => setOpen(false)}>
+                <div  className={`navItemsStyle ${
+                    pathname === "/signup"
+                      ? "text-[var(--mygreen)]"
+                      : ""
+                  }`}>
                   <p>register</p>
                   <UserPlus className={navIconStyle} />
                 </div>

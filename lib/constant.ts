@@ -25,21 +25,38 @@ export const defaultTemplate = `
 
 export const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+// export function stripHtml(html: string): string {
+//   if (typeof window === "undefined") return html;
+//   const div = document.createElement("div");
+//   div.innerHTML = html;
+//   return div.textContent || div.innerText || "";
+// }
 export function stripHtml(html: string): string {
   if (typeof window === "undefined") return html;
+
+  // Remove <h3> and its content
+  const htmlWithoutH3 = html.replace(/<h3[^>]*>[\s\S]*?<\/h3>/gi, "");
+
+  // Now strip remaining HTML
   const div = document.createElement("div");
-  div.innerHTML = html;
+  div.innerHTML = htmlWithoutH3;
   return div.textContent || div.innerText || "";
 }
-
 export enum ApplicationStatus {
   invited = "invited",
   rejected = "rejected",
-   pending=" pending"
+  pending = " pending",
 }
 export enum Role {
   candidate = "candidate",
   recruiter = "recruiter",
+}
+
+export enum NotificationType {
+  invitation = "invitation",
+  rejection = "rejection",
+  proposal = "proposal",
+  application="application"
 }
 
 export function generateRoomName(user1: string, user2: string) {
@@ -60,7 +77,7 @@ export function formatFileSize(bytes: number): string {
   return `${bytes.toFixed(1)} ${units[i]}`;
 }
 
-export function isImageFile(url: string ): boolean {
+export function isImageFile(url: string): boolean {
   const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"];
   const ext = url.split(".").pop()?.toLowerCase();
   if (ext) {
@@ -68,7 +85,6 @@ export function isImageFile(url: string ): boolean {
   }
   return false;
 }
-
 
 export function stringToColor(string: string) {
   let hash = 0;
@@ -90,17 +106,16 @@ export function stringToColor(string: string) {
   return color;
 }
 
-
 export const quillModules = {
   toolbar: [
     ["bold", "italic", "underline"],
     [{ header: [3, false] }],
-    [{ list: "ordered" }, { list: "bullet" }], 
+    [{ list: "ordered" }, { list: "bullet" }],
     ["link", "image"],
   ],
 };
 
-export const jobFields:{id:number,title:string}[] = [
+export const jobFields: { id: number; title: string }[] = [
   { id: 1, title: "general" },
   { id: 2, title: "arts" },
   { id: 3, title: "business" },
@@ -115,7 +130,6 @@ export const jobFields:{id:number,title:string}[] = [
   { id: 12, title: "transportation" },
   { id: 13, title: "engineering" },
 ];
-
 
 export const defaultCompanyTemplate = `
   <h3>Company History</h3>
@@ -144,7 +158,8 @@ export function linkifyAll(text: string): string {
   // Order: links → email → phone
   const linkRegex = /https?:\/\/[^\s]+/g;
   const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z]{2,}\b/gi;
-  const phoneRegex = /(?:\+?\d{1,3})?[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/g;
+  const phoneRegex =
+    /(?:\+?\d{1,3})?[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/g;
 
   return text
     .replace(linkRegex, (url) => {

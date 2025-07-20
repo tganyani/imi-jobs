@@ -7,7 +7,7 @@ import { NextRequest } from "next/server";
 export async function POST(req:NextRequest) {
     try {
     const {email} = await req.json()
-        const user = await prisma.user.findUnique({ where: { email,verified:true } });
+        const user = await prisma.user.findUnique({ where: { email } });
         if (!user) return Response.json({ error: "wrong email" })
         const verificationCode = generateVerificationCode({
           length: 6,

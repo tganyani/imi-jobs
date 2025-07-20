@@ -15,11 +15,12 @@ const GoogleLoginSuccessComponent = () => {
   const id = searchParams.get("id") as string;
   const role = searchParams.get("role") as string;
   const logged = searchParams.get("logged");
+  const name = searchParams.get("name") as string;
   const { login } = useAuthStore();
   useEffect(() => {
     const handleSetState = () => {
       if (logged) {
-        login(email, id, role);
+        login(email, id, role,name);
         setTimeout(() => {
           if (role === Role.candidate) {
             router.replace("/");

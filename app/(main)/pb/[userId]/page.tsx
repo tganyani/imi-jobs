@@ -27,7 +27,7 @@ export default function ViewPubicUser() {
   const { userId } = useParams();
   const [copeid, setCopied] = useState<boolean>(false);
   const { data, error, isLoading } = useSWR<Candidate>(
-    `/api/candidate/${userId}`,
+    `/api/pb/${userId}`,
     fetcher
   );
   const handleCopy = async (text: string) => {

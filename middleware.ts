@@ -8,14 +8,38 @@ const REFRESH_SECRET = new TextEncoder().encode(
   process.env.JWT_REFRESH_SECRET!
 );
 
-const PROTECTED_PATHS = ["/api/candidate", "/api/project", "/api/vaccancy"];
+const PROTECTED_PATHS = [
+  "/api/candidate",
+  "/api/project",
+  "/api/vaccancy/applicants",
+  "/api/vaccancy/apply",
+
+  "/api/vaccancy/letter",
+  "/api/vaccancy/like",
+  "/api/vaccancy/notif",
+  "/api/vaccancy/user",
+
+  "/api/vaccancy/view",
+  "/api/candidate",
+  "/api/chat",
+  "/api/project",
+  "/api/room",
+];
 const candidateRoutes = ["/vaccancy/applied", "/vaccancy/saved"];
 const recruiterRoutes = ["/vaccancy/post", "/vaccancy/posted"];
+const protectFrontForBoth = ["/profile", "/rooms"];
 
 export async function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("access_token")?.value;
   const refreshToken = request.cookies.get("refresh_token")?.value;
   const role = request.cookies.get("role")?.value;
+  if (
+    protectFrontForBoth.some(
+      (path) => request.nextUrl.pathname.startsWith(path) && !accessToken
+    )
+  ) {
+    return NextResponse.redirect(new URL("/signin", request.url));
+  }
 
   if (
     candidateRoutes.some(
@@ -23,15 +47,23 @@ export async function middleware(request: NextRequest) {
         request.nextUrl.pathname.startsWith(path) && role === Role.recruiter
     )
   ) {
-    return NextResponse.redirect(new URL("/vaccancy/posted", request.url));
+    if (accessToken) {
+      return NextResponse.redirect(new URL("/vaccancy/posted", request.url));
+    } else {
+      return NextResponse.redirect(new URL("/signin", request.url));
+    }
   }
-if (
+  if (
     recruiterRoutes.some(
       (path) =>
         request.nextUrl.pathname.startsWith(path) && role === Role.candidate
     )
   ) {
-    return NextResponse.redirect(new URL("/vaccancy/applied", request.url));
+    if (accessToken) {
+      return NextResponse.redirect(new URL("/vaccancy/applied", request.url));
+    } else {
+      return NextResponse.redirect(new URL("/signin", request.url));
+    }
   }
 
   // Allow public routes through
@@ -89,6 +121,23 @@ export const config = {
     "/api/candidate/:path*",
     "/api/project/:path*",
     "/api/vaccancy/:path*",
-    "/vaccancy/:path*",
+    "/api/vaccancy/applicants/:path*",
+    "/api/vaccancy/apply/:path*",
+    "/api/vaccancy/letter/:path*",
+    "/api/vaccancy/like/:path*",
+    "/api/vaccancy/notif/:path*",
+    "/api/vaccancy/user/:path*",
+    "/api/vaccancy/view/:path*",
+
+    "/vaccancy/applied",
+    "/vaccancy/saved",
+    "/vaccancy/post",
+    "/vaccancy/posted/:path*",
+    "/api/candidate/:path*",
+    "/api/chat/:path*",
+    "/api/project/:path*",
+    "/api/room/:path*",
+    "/profile/:path*",
+    "/rooms/:path*",
   ],
 };

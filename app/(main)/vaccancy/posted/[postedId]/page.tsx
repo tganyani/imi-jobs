@@ -1,7 +1,7 @@
 "use client";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Loading from "@/components/loading";
-import { ApplicationStatus, fetcher } from "@/lib/constant";
+import { ApplicationStatus, fetcher, NotificationType } from "@/lib/constant";
 import useSWR from "swr";
 import { Applicant } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,13 @@ import { MessageCirclePlus } from "lucide-react";
 import axios from "axios";
 import { useAuthStore } from "@/stores/authStore";
 import { Suspense } from "react";
-import { socket } from "@/lib/socket";
+import {socket} from "@/lib/socket"
 
 const ApplicantComponent = () => {
   const router = useRouter();
   const { postedId: vaccancyId } = useParams();
   const { userId } = useAuthStore() as { userId: string };
+  
   const searchParams = useSearchParams();
   const vaccancyTitle = searchParams.get("vaccancyTitle");
 
@@ -22,11 +23,14 @@ const ApplicantComponent = () => {
     `/api/vaccancy/applicants?vaccancyId=${vaccancyId}&recruiterId=${userId}`,
     fetcher
   );
+  
   const handleAction = async (
     id: string,
     status: string,
     name: string,
-    roomId: string
+    roomId: string,
+    toId: string,
+    fromName: string
   ) => {
     await mutate(
       data?.map((aplnt) => {
@@ -42,22 +46,41 @@ const ApplicantComponent = () => {
     );
     await axios
       .patch(`/api/vaccancy/applicants/${id}`, { status })
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (data?.updated) {
+          socket?.emit("notif", { roomName: name });
           if (status === ApplicationStatus.invited) {
             socket?.emit("sendMessage", {
-              message: `<h6 style="color: #2e7d32;">Interview Invitation</h6> <br/>You have recieved an invitation for this position  https://imi-jobs.vercel.app/vaccancy/${vaccancyId}`,
+              message: `<h6 style="color: #2e7d32;">Interview Invitation</h6> <br/>You have recieved an invitation for this position  https://www.imisebenzi.co.zw/vaccancy/${vaccancyId}`,
               userId,
               name,
               roomId,
             });
+            await axios
+              .post("/api/vaccancy/notif", {
+                toId,
+                targetId: roomId,
+                type: NotificationType.invitation,
+                isCandidate: true,
+                fromName,
+              })
+              .catch((err) => console.error(err));
           } else {
             socket?.emit("sendMessage", {
-              message: `<h6 style="color: #c62828;">Application Rejected</h6> <br/>You have recieved an application rejection for this position  https://imi-jobs.vercel.app/vaccancy/${vaccancyId}`,
+              message: `<h6 style="color: #c62828;">Application Rejected</h6> <br/>You have recieved an application rejection for this position  https://www.imisebenzi.co.zw/vaccancy/${vaccancyId}`,
               userId,
               name,
               roomId,
             });
+            await axios
+              .post("/api/vaccancy/notif", {
+                toId,
+                targetId: roomId,
+                type: NotificationType.rejection,
+                isCandidate: true,
+                fromName,
+              })
+              .catch((err) => console.error(err));
           }
         }
       })
@@ -121,7 +144,9 @@ const ApplicantComponent = () => {
                     aplnt.id,
                     ApplicationStatus.invited,
                     aplnt.roomName,
-                    aplnt.roomId
+                    aplnt.roomId,
+                    aplnt.userId,
+                    aplnt.companyName
                   )
                 }
               >
@@ -138,7 +163,9 @@ const ApplicantComponent = () => {
                     aplnt.id,
                     ApplicationStatus.rejected,
                     aplnt.roomName,
-                    aplnt.roomId
+                    aplnt.roomId,
+                    aplnt.userId,
+                    aplnt.companyName
                   )
                 }
               >

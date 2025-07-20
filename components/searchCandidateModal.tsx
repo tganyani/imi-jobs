@@ -56,16 +56,16 @@ export default function SeachCandidateMoadal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className=""></DialogTrigger>
-      <DialogContent className="flex min-h-100 flex-col items-center border-none sm:p-4 p-2">
+      <DialogContent className="flex min-h-100 max-h-screen flex-col items-center border-none sm:p-4 p-2">
         <DialogHeader className="w-full">
-          <DialogTitle className="text-start">
+          <DialogTitle className="text-start text-sm">
             Search potential candidates
           </DialogTitle>
-          <DialogDescription className="text-start">
+          <DialogDescription className="text-start text-sm">
             Find candidates by jobtitle, city and country located
           </DialogDescription>
         </DialogHeader>
-        <div className="w-full space-y-2">
+        <div className="w-full space-y-2 overflow-y-auto">
           <div className="space-y-2">
             <div className="group ">
               <p className="text-sm group-focus-within:block hidden">title</p>
@@ -136,7 +136,7 @@ export default function SeachCandidateMoadal({
                 </Link>
               ))
             ) : (
-              <p className="text-sm">No candidates match this position</p>
+              <p className="text-sm ">No candidates match this position</p>
             )}
           </div>
         </div>

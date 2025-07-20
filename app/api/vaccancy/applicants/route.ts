@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
           select: {
             name: true,
             rooms: {
-              take:1,
+              take: 1,
               where: {
                 users: {
                   some: {
@@ -34,14 +34,20 @@ export async function GET(req: NextRequest) {
             },
           },
         },
+        vaccancy: {
+          select: {
+            companyName: true,
+          },
+        },
       },
     });
     return Response.json(
-      applications.map(({ user, ...rest }) => ({
+      applications.map(({ user, vaccancy, ...rest }) => ({
         ...rest,
         candidateName: user.name,
-        roomId:user.rooms[0]?.id,
-        roomName:user.rooms[0]?.name
+        roomId: user.rooms[0]?.id,
+        roomName: user.rooms[0]?.name,
+        companyName: vaccancy.companyName,
       }))
     );
   } catch (err) {

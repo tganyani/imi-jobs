@@ -1,12 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
 import { fetcher, Role } from "@/lib/constant";
 import useSWR from "swr";
 import Loading from "@/components/loading";
 import { Candidate, Edu, Employ, Language, Project, Skill } from "@/lib/types";
 import EditNameMoadal from "@/components/editNameModal";
-import { MapPin, Phone, Globe, MoveRight, Copy,CopyCheck } from "lucide-react";
+import { MapPin, Phone, Globe, MoveRight, Copy, CopyCheck } from "lucide-react";
 import EditBioMoadal from "@/components/editBioModal";
 import EditEducationMoadal from "@/components/editEducationModal";
 import DOMPurify from "dompurify";
@@ -30,22 +31,30 @@ import EditLanguageMoadal from "@/components/editLanguageModal";
 dayjs.extend(relativeTime);
 
 export default function Profile() {
-  const { userId, role } = useAuthStore();
-  const [copeid , setCopied] = useState<boolean>(false)
+  const router = useRouter();
+  const { userId, role, isLoggedIn } = useAuthStore();
+  useEffect(() => {
+    if (!isLoggedIn) return router.push("/signin");
+  }, [isLoggedIn]);
+  const [copeid, setCopied] = useState<boolean>(false);
+
   const isCandidate = role === Role.candidate;
   const { data, error, isLoading } = useSWR<Candidate>(
     `/api/candidate/${userId}`,
     fetcher
   );
- const handleCopy = async (text:string) => {
+  const handleCopy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true)
-      setTimeout(()=>setCopied(false),2000)
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       alert("Failed to copy");
-      console.error(err)
-    }}
+      console.error(err);
+    }
+  };
+  // redirect if not logged in
+
   if (isLoading)
     return (
       <div>
@@ -90,21 +99,22 @@ export default function Profile() {
           )}
         </div>
         <div>
-          <Zoom>
-            <div className="w-30 h-30 relative border-4  border-[var(--mygreen)] p-2 rounded-full">
-              {data.image && (
+          <div className="w-30 h-30 relative border-4  border-stone-300 p-2 rounded-full">
+            {data.image && (
+              <Zoom zoomMargin={40}>
                 <CldImage
                   src={data.imagePublicId}
                   alt="profile Image"
                   fill
                   className="object-cover rounded-full shadow cursor-zoom-in"
                 />
-              )}
-              <div className="absolute right-0 bottom-0">
-                <EditProfileImageMoadal url={data.image} />
-              </div>
+              </Zoom>
+            )}
+
+            <div className="absolute right-0 bottom-0">
+              <EditProfileImageMoadal url={data.image} />
             </div>
-          </Zoom>
+          </div>
         </div>
       </div>
       {/* company info */}
@@ -269,7 +279,7 @@ export default function Profile() {
               ))}
             </div>
           </div>
-           {/* languages*/}
+          {/* languages*/}
           <div className="space-y-2">
             <div className="flex flex-row justify-between ">
               <p>Languages</p>
@@ -309,10 +319,14 @@ export default function Profile() {
             <div className="w-50  rounded-sm text-white flex flex-nowrap bg-black items-center justify-between px-2 py-1 [@media(max-width:480px)]:w-full [@media(max-width:480px)]:justify-center gap-x-1">
               <Phone className="h-4 w-4" />
               <p className="text-sm ">{data.phone}</p>
-              {
-                copeid?<CopyCheck className="h-4 w-4"/>:<Copy className="h-4 w-4" onClick={()=>handleCopy(data.phone)} />
-              }
-              
+              {copeid ? (
+                <CopyCheck className="h-4 w-4" />
+              ) : (
+                <Copy
+                  className="h-4 w-4"
+                  onClick={() => handleCopy(data.phone)}
+                />
+              )}
             </div>
           )}
           {data.whatsapp && (

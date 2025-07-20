@@ -10,17 +10,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CircleUser, User, Redo2, Settings, LogOut } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { CircleUser, User, Redo2, LogOut, LogIn } from "lucide-react";
+// import { Settings } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
-import { Role } from "@/lib/constant";
+import { Role, stringToColor } from "@/lib/constant";
 
 import { socket } from "@/lib/socket";
 
-
 export default function AccountMenu() {
   const router = useRouter();
-  const { email, logout, setRole, role, userId } = useAuthStore();
+  const { email, logout, setRole, role, userId, isLoggedIn,name } = useAuthStore();
+
   const [hasHydrated, setHasHydrated] = useState(false);
   const changeAccount = async () => {
     const newRole = role === Role.candidate ? Role.recruiter : Role.candidate;
@@ -43,47 +45,76 @@ export default function AccountMenu() {
     setHasHydrated(true);
   }, []);
 
-  
-
   if (!hasHydrated) return null;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="outline-none ">
-        <CircleUser />
+        {isLoggedIn ? (
+          <Avatar
+            className="text-white"
+            style={{ backgroundColor: stringToColor(email as string) }}
+          >
+            <AvatarFallback>{name ? name[0] : "o"}</AvatarFallback>
+          </Avatar>
+        ) : (
+          <CircleUser />
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent className="border-none bg-white shadow-lg">
-        <DropdownMenuLabel className="text-gray-400">{email}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="flex flex-row flex-nowrap justify-between px-4 border-1 border-stone-400 rounded-full py-1">
-          <Link href="/profile">profile</Link>
-          <User className="h-4 w-4" />
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={changeAccount}
-          className="flex flex-row flex-nowrap justify-between px-4 border-1 border-stone-400 rounded-full py-1"
-        >
-          <p>
-            {role === Role.candidate ? "become rcruiter" : "become candidate"}
-          </p>{" "}
-          <Redo2 className="h-4 w-4" />
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="flex flex-row flex-nowrap justify-between px-4 border-1 border-stone-400 rounded-full py-1">
+        {isLoggedIn ? (
+          <>
+            <DropdownMenuLabel className="text-gray-400">
+              {email}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <Link href="/profile">
+              <DropdownMenuItem className="flex flex-row flex-nowrap justify-between px-4  py-1 text-stone-500 hover:opacity-60">
+                <p>profile</p>
+                <User className="h-4 w-4" />
+              </DropdownMenuItem>
+            </Link>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={changeAccount}
+              className="flex flex-row flex-nowrap justify-between px-4  py-1  text-stone-500 hover:opacity-60"
+            >
+              <p>
+                {role === Role.candidate
+                  ? "become recruiter"
+                  : "become candidate"}
+              </p>{" "}
+              <Redo2 className="h-4 w-4" />
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {/* <DropdownMenuItem className="flex flex-row flex-nowrap justify-between px-4 py-1">
           <p>settings </p>
           <Settings className="h-4 w-4" />
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="flex text-red-500 flex-row flex-nowrap justify-between px-4 border-1 border-red-500 rounded-full py-1"
-          onClick={() => {
-            router.push("/signin")
-            logout()
-            socket.emit("offline",{userId:userId as string})
-          }}
-        >
-          <p>logout</p> <LogOut className="h-4 w-4" />
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="flex text-red-500 flex-row flex-nowrap justify-between font-bold px-4 border-2 border-red-500 rounded-full py-1 hover:opacity-60"
+              onClick={async () => {
+                await axios
+                  .post("/api/logout")
+                  .catch((err) => console.error(err));
+                socket?.emit("offline", { userId: userId as string });
+                router.push("/signin");
+                logout();
+              }}
+            >
+              <p>logout</p> <LogOut className="h-4 w-4" />
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <DropdownMenuItem
+            className="flex text-[var(--mygreen)] flex-row flex-nowrap justify-between font-bold px-4 border-2 border-[var(--mygreen)] rounded-full py-1 hover:opacity-60"
+            onClick={() => {
+              router.push("/signin");
+            }}
+          >
+            <p>login</p> <LogIn className="h-4 w-4" />
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

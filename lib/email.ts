@@ -44,7 +44,6 @@ export async function sendApplicationRejectionEmail(
     };
 
     await transporter.sendMail(mailOptions);
-    console.log("Verification email sent successfully!");
   } catch (error) {
     console.error("Error sending verification email:", error);
     throw error;
@@ -70,8 +69,8 @@ export async function sendApplicationInvitationEmail(
   <h2 style="color: #2e7d32;">Interview Invitation</h2>
 
   <p>Thank you for applying for the <strong>${jobTitle}</strong> position 
-  <a href=https://imi-jobs.vercel.app/vaccancy/${jobId} style="color: #1a73e8; font-weight: bold;" target="_blank">
-       https://imi-jobs.vercel.app/vaccancy/${jobId}
+  <a href=https://www.imisebenzi.co.zw/vaccancy/${jobId} style="color: #1a73e8; font-weight: bold;" target="_blank">
+       https://www.imisebenzi.co.zw/vaccancy/${jobId}
       </a>
  
   at <strong>${companyName}</strong>. After reviewing your application, we are pleased to invite you to the next stage of our recruitment process.</p>
@@ -91,7 +90,6 @@ export async function sendApplicationInvitationEmail(
     };
 
     await transporter.sendMail(mailOptions);
-    console.log("Verification email sent successfully!");
   } catch (error) {
     console.error("Error sending verification email:", error);
     throw error;
@@ -118,8 +116,8 @@ export async function sendJobProposalEmail(
 
   <p>We are pleased to inform you that after reviewing your application and qualifications, we would like to offer you the opportunity to join <strong>${companyName}</strong> as a <strong>${jobTitle}</strong> .
   You can read more about the job on this link
-  <a href=https://imi-jobs.vercel.app/vaccancy/${jobId} style="color: #1a73e8; font-weight: bold;" target="_blank">
-       https://imi-jobs.vercel.app/vaccancy/${jobId}
+  <a href=https://www.imisebenzi.co.zw/vaccancy/${jobId} style="color: #1a73e8; font-weight: bold;" target="_blank">
+       https://www.imisebenzi.co.zw/vaccancy/${jobId}
       </a>
   <p>We were impressed by your qualifications and believe your experience could be a strong match for our team. As the next step, we would like to schedule an interview to learn more about your background and to give you the opportunity to ask us questions as well.</p>
 
@@ -136,7 +134,6 @@ export async function sendJobProposalEmail(
     };
 
     await transporter.sendMail(mailOptions);
-    console.log("Verification email sent successfully!");
   } catch (error) {
     console.error("Error sending verification email:", error);
     throw error;

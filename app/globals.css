@@ -12,6 +12,20 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
+.clamp-rich {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+  text-overflow: ellipsis;
+}
+
+.clamp-rich * {
+  display: inline !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
 .navItemsStyle {
   @apply flex sm:w-auto w-30 flex-row justify-between flex-nowrap items-center gap-x-1 hover:text-[var(--mygreen)];
 }

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       },
     });
     if (existingUser) {
-      return  Response.json({msg:"Email already in use",created:false});
+      return  Response.json({err:"Email already in use",created:false});
     }
     const unverifiedUser = await prisma.user.findFirst({
       where: {
@@ -39,12 +39,14 @@ export async function POST(req: NextRequest) {
         },
         data: {
           verificationCode: hashedVerificationCode,
+           password: hashedPassword,
         },
       });
       return Response.json({
         msg: "Verification code sent to email",
         created: true,
         email,
+        err:""
       });
     }
     const user = await prisma.user.create({
@@ -62,6 +64,7 @@ export async function POST(req: NextRequest) {
       created: true,
       email,
       id: user.id,
+      err:""
     });
   } catch (err) {
     console.error(err);

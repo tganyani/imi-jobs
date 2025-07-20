@@ -8,11 +8,18 @@ import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import axios from "axios";
+import { toast } from "sonner";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
-type Inputs = {
-  password: string;
-  confirmpassword: string;
-};
+const formSchema = z.object(
+  {
+  password: z.string().trim().min(6,"password must be at least 6 characters"),
+  confirmpassword: z.string().trim().min(6,"confirm your password"),
+}
+)
+
+type Inputs = z.infer<typeof formSchema>
 
 const ResetPasswordComponent = () => {
   const searchParams = useSearchParams();
@@ -24,7 +31,9 @@ const ResetPasswordComponent = () => {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<Inputs>();
+  } = useForm<Inputs>({
+    resolver:zodResolver(formSchema)
+  });
   const values = watch();
   const allFilled = Object.values(values).every(
     (val) => val && val.trim() !== ""
@@ -36,6 +45,7 @@ const ResetPasswordComponent = () => {
       .post("/api/rpassword", { password: data.password, email })
       .then(({ data }) => {
         if (data.reset) {
+          toast(`Password successfully reset `);
           router.push(`/signin`);
         }
       })
@@ -54,9 +64,11 @@ const ResetPasswordComponent = () => {
             {...register("password", { required: true })}
           />
         </div>
-        {errors.password && (
-          <span className="text-red-500 text-sm ">This field is required</span>
+        <div>
+          {errors.password && (
+          <span className="text-red-500 text-sm ">{errors.password.message}</span>
         )}
+        </div>
         <div>
           <p className="text-sm">confirm new password</p>
           <Input
@@ -70,6 +82,11 @@ const ResetPasswordComponent = () => {
             }
             {...register("confirmpassword", { required: true })}
           />
+        </div>
+        <div>
+           {errors.confirmpassword && (
+          <span className="text-red-500 text-sm ">{errors.confirmpassword.message}</span>
+        )}
         </div>
         <Button
           variant="outline"
