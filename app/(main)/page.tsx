@@ -25,10 +25,10 @@ import { ApplyModal } from "@/components/applyModal";
 import { useAuthStore } from "@/stores/authStore";
 import axios from "axios";
 import CheckAccess from "@/components/checkAccess";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FlagJob from "@/components/flagJob";
+import { socket } from "@/lib/socket";
 dayjs.extend(relativeTime);
-
 
 export default function Home() {
   const batchSize = 5;
@@ -53,7 +53,15 @@ export default function Home() {
       keepPreviousData: true,
     }
   );
-
+  useEffect(() => {
+    const handleRefreshNewJob = () => {
+      mutate();
+    };
+    socket.on("refreshNewJob", handleRefreshNewJob);
+    return () => {
+      socket.off("refreshNewJob", handleRefreshNewJob);
+    };
+  }, []);
   const handleOpenFilter = () => {
     setOpenFilter((current) => !current);
   };
@@ -110,9 +118,7 @@ export default function Home() {
 
   return (
     <div className="p-2">
-      {
-        isLoggedIn&&<CheckAccess />
-      }
+      {isLoggedIn && <CheckAccess />}
       <p className="my-2">Jobs</p>
       <div className="flex lg:flex-row gap-y-8 gap-x-4 flex-col-reverse">
         {error && <div>error fetching</div>}

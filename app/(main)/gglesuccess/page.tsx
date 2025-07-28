@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import Loading from "@/components/loading";
 import { Suspense, useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
-import { Role } from "@/lib/constant";
+import { generateRoomName, Role } from "@/lib/constant";
+import axios from "axios";
+import { socket } from "@/lib/socket";
+import { encryptMessage} from "@/lib/encrypt";
 
 const GoogleLoginSuccessComponent = () => {
   const searchParams = useSearchParams();
@@ -16,11 +19,39 @@ const GoogleLoginSuccessComponent = () => {
   const role = searchParams.get("role") as string;
   const logged = searchParams.get("logged");
   const name = searchParams.get("name") as string;
+  const other = searchParams.get("other") as string;
+  const nw = searchParams.get("nw");
   const { login } = useAuthStore();
+  const handeSendWelcome = async () => {
+    await axios
+      .post("/api/room", {
+        name: generateRoomName(
+          process.env.NEXT_PUBLIC_ADMIN_EMAIL as string,
+          email as string
+        ),
+        ids: [id, other],
+      })
+      .then((res) => {
+        if (res.data.created) {
+          socket?.emit("sendMessage", {
+            message: encryptMessage(`Hello ${name}! welcome to imisebenzi ,you can post or apply jobs here `),
+            userId: other,
+            name: res.data.name,
+            roomId: res.data.id,
+          });
+        }
+      });
+  };
   useEffect(() => {
-    const handleSetState = () => {
+    const handleSetState = async () => {
       if (logged) {
-        login(email, id, role,name);
+        login(email, id, role, name);
+        // send welcome message
+
+        if (nw) {
+          await handeSendWelcome();
+        }
+
         setTimeout(() => {
           if (role === Role.candidate) {
             router.replace("/");
@@ -34,7 +65,7 @@ const GoogleLoginSuccessComponent = () => {
         }, 2000);
       }
     };
-    return handleSetState();
+    handleSetState();
   }, []);
   return (
     <div className="flex flex-col justify-center items-center min-h-screen px-2 ">

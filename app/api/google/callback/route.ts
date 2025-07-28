@@ -3,6 +3,7 @@ import { google } from "googleapis";
 import { NextRequest, NextResponse } from "next/server";
 import jsonwebtoken from "jsonwebtoken";
 import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
 
 export async function GET(req: NextRequest) {
   const cookieStore = await cookies();
@@ -30,6 +31,25 @@ export async function GET(req: NextRequest) {
   const { data: userInfo } = await oauth2.userinfo.get();
 
   if (userInfo.verified_email) {
+    const password = userInfo.email + new Date().toISOString();
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const admin = await prisma.user.findUnique({
+      where: {
+        email: process.env.NEXT_PUBLIC_ADMIN_EMAIL as string,
+      },
+      select: {
+        id: true,
+      },
+    });
+    const userExist = await prisma.user.findUnique({
+      where: {
+        email: userInfo.email as string,
+      },
+      select: {
+        id: true,
+      },
+    });
+
     const user = await prisma.user.upsert({
       where: {
         email: userInfo.email as string,
@@ -41,7 +61,7 @@ export async function GET(req: NextRequest) {
         email: userInfo.email as string,
         name: userInfo.name as string,
         image: userInfo.picture as string,
-        password: "",
+        password: hashedPassword,
       },
     });
     const access_token = jsonwebtoken.sign(
@@ -81,7 +101,11 @@ export async function GET(req: NextRequest) {
     // });
     return NextResponse.redirect(
       new URL(
-        `/gglesuccess?email=${user.email}&id=${user.id}&role=${user.role}&logged=true&name=${user.name}`,
+        `/gglesuccess?email=${user.email}&id=${user.id}&role=${
+          user.role
+        }&logged=true&name=${user.name}&other=${
+          userExist ? "" : admin?.id
+        }&nw=${userExist ? false : true}`,
         req.url
       )
     );

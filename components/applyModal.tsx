@@ -19,6 +19,7 @@ import axios from "axios";
 import Loading from "./loading";
 import { generateRoomName, NotificationType } from "@/lib/constant";
 import { toast } from "sonner";
+import { encryptMessage} from "@/lib/encrypt";
 
 // import { getSocket } from "@/lib/socket";
 import { socket } from "@/lib/socket";
@@ -97,7 +98,7 @@ export function ApplyModal({
       .then(async ({ data }) => {
         if (data?.created) {
           socket?.emit("sendMessage", {
-            message: `<h6 style="color: #2e7d32;">Job Application from ${name} for ${
+            message: encryptMessage(`<h6 style="color: #2e7d32;">Job Application from ${name} for ${
               job.title
             } position</h6> <br/>${watch(
               "coverLetter"
@@ -105,11 +106,12 @@ export function ApplyModal({
             https://www.imisebenzi.co.zw/vaccancy/posted/${
               job.id
             }/${userId}
-            `,
+            `),
             userId,
             name: data.roomName,
             roomId: data.roomId,
           });
+          socket?.emit("notif", { roomName: data.roomName });
           toast("Profile successfully connected", {
             description: "Now you can wait for feedback ",
             action: (

@@ -8,6 +8,7 @@ export default function GoogleButton() {
   };
   return (
     <div className="sm:w-auto w-full px-2 space-y-4">
+      
       <div className="flex flex-nowrap items-center justify-center gap-x-2">
         <div className="flex-1">
           <Separator orientation="horizontal" className="bg-stone-600 border-1  " />

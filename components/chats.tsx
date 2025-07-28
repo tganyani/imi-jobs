@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { CheckCheck, Check, Menu } from "lucide-react";
 import DOMPurify from "dompurify";
 dayjs.extend(localizedFormat);
+import { decryptMessage} from "@/lib/encrypt";
 
 import { socket } from "@/lib/socket";
 import CheckAccess from "./checkAccess";
@@ -145,7 +146,7 @@ export default function Chats() {
                         <div
                           className="text-sm text-gray-500 line-clamp-1 sm:max-w-80 max-w-[calc(100vw-80px)] "
                           dangerouslySetInnerHTML={{
-                            __html: DOMPurify.sanitize(room.chats[0]?.message),
+                            __html: DOMPurify.sanitize(decryptMessage(room.chats[0]?.message)),
                           }}
                         />
                       )}

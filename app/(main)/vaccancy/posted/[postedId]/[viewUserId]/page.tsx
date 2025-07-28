@@ -29,19 +29,23 @@ import { CldImage } from "next-cloudinary";
 import "react-medium-image-zoom/dist/styles.css";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
+import { encryptMessage } from "@/lib/encrypt";
 import { useAuthStore } from "@/stores/authStore";
 dayjs.extend(relativeTime);
 
-import {socket} from "@/lib/socket"
-
+import { socket } from "@/lib/socket";
 
 export default function ViewUser() {
   const { viewUserId } = useParams();
   const [copeid, setCopied] = useState<boolean>(false);
   const router = useRouter();
   const { postedId: vaccancyId } = useParams() as { postedId: string };
-  const { email, userId } = useAuthStore() as { userId: string; email: string };
-  
+  const {
+    email,
+    userId,
+    name: recruiter,
+  } = useAuthStore() as { userId: string; email: string; name: string };
+
   const { data, error, isLoading, mutate } = useSWR<Candidate>(
     `/api/vaccancy/applicants/${viewUserId}?vaccancyId=${vaccancyId}`,
     fetcher
@@ -64,7 +68,16 @@ export default function ViewUser() {
         : undefined,
       false
     );
-    const message = `<h6 style="color: #2e7d32;">Job Offer Proposal</h6> <br/>You have recived a job proposal from for this postion  https://www.imisebenzi.co.zw/vaccancy/${vaccancyId}`;
+    const message = `<h6 style="color: #2e7d32;">Job Offer Proposal</h6> <br/>You have recived a job proposal from for this postion  https://www.imisebenzi.co.zw/vaccancy/${vaccancyId} <br/> <p>We were impressed by your qualifications and believe your experience could be a strong match for our team. As the next step, we would like to schedule an interview to learn more about your background and to give you the opportunity to ask us questions as well.</p>
+
+  <p>Please reply to this email with your availability over the next few days so that we can coordinate a suitable time for the interview.</p>
+
+  <p>If you have any questions in the meantime, feel free to reach out.</p
+  <p>We’re excited about the possibility of working together and look forward to your response.</p>
+
+  <p>Sincerely,<br/>
+  <strong>${recruiter}</strong><br/>
+  Recruiting Manager</p>`;
     const roomData = {
       name: generateRoomName(email as string, data?.email as string),
       ids: [userId, viewUserId],
@@ -73,8 +86,9 @@ export default function ViewUser() {
       .post(`/api/candidate`, { vaccancyId, userId: viewUserId, roomData })
       .then(async ({ data }) => {
         if (data.proposed) {
+          socket?.emit("notif", { roomName:  data?.roomName });
           socket?.emit("sendMessage", {
-            message,
+            message: encryptMessage(message),
             userId,
             name: data?.roomName,
             roomId: data?.roomId,
@@ -121,10 +135,23 @@ export default function ViewUser() {
     await axios
       .patch(`/api/vaccancy/applicants/${id}`, { status })
       .then(async ({ data }) => {
+        socket?.emit("notif", { roomName: name });
         if (data?.updated) {
           if (status === ApplicationStatus.invited) {
             socket?.emit("sendMessage", {
-              message: `<h6 style="color: #2e7d32;">Interview Invitation</h6> <br/>You have recieved an invitation for this position  https://www.imisebenzi.co.zw/vaccancy/${vaccancyId}`,
+              message:
+                encryptMessage(`<h6 style="color: #2e7d32;">Interview Invitation</h6> <br/>You have recieved an invitation for this position  https://www.imisebenzi.co.zw/vaccancy/${vaccancyId}  After reviewing your application, we are pleased to invite you to the next stage of our recruitment process.</p>
+
+  <p>We were impressed by your qualifications and believe your experience could be a strong match for our team. As the next step, we would like to schedule an interview to learn more about your background and to give you the opportunity to ask us questions as well.</p>
+
+  <p>Please reply to this email with your availability over the next few days so that we can coordinate a suitable time for the interview.</p>
+
+  <p>If you have any questions in the meantime, feel free to reach out.</p
+  <p>We look forward to speaking with you soon.</p>
+
+  <p>Sincerely,<br/>
+  <strong>${recruiter}</strong><br/>
+  Recruiting Manager</p>`),
               userId,
               name,
               roomId,
@@ -140,7 +167,20 @@ export default function ViewUser() {
               .catch((err) => console.error(err));
           } else {
             socket?.emit("sendMessage", {
-              message: `<h6 style="color: #c62828;">Application Rejected</h6> <br/>You have recieved an application rejection for this position  https://www.imisebenzi.co.zw/vaccancy/${vaccancyId}`,
+              message:
+                encryptMessage(`<h6 style="color: #c62828;">Application Rejected</h6> <br/>You have recieved an application rejection for this position  https://www.imisebenzi.co.zw/vaccancy/${vaccancyId} <br> <p>Thank you for applying. We truly appreciate your interest in joining our team and the effort you put into your application.</p>
+
+          <p>After careful consideration, we regret to inform you that you have not been selected to move forward in the recruitment process at this time.</p>
+
+          <p>This decision was not easy due to the high quality of applications we received. Although your profile is strong, we have decided to proceed with candidates whose experience and qualifications more closely match the specific requirements of the role.</p>
+
+          <p>We encourage you to apply for future opportunities with us. Your passion and background are impressive, and we’d be happy to consider you for roles that may align better with your skills.</p>
+
+          <p>We wish you the very best in your career journey and thank you again for your interest in this position.</p>
+
+          <p>Sincerely,<br/>
+          <strong>${recruiter}</strong> <br/>
+          Recruiting Manager</p>`),
               userId,
               name,
               roomId,

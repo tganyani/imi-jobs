@@ -15,6 +15,7 @@ import { Suspense } from "react";
 import axios from "axios";
 import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { encryptMessage} from "@/lib/encrypt";
 import { generateRoomName } from "@/lib/constant";
 import { socket } from "@/lib/socket";
 
@@ -124,7 +125,7 @@ const VerifyPasswordComponent = () => {
               .then((res) => {
                 if (res.data.created) {
                   socket?.emit("sendMessage", {
-                    message: `Hello ${data.userName}! welcome to imisebenzi ,you can post or apply jobs here `,
+                    message: encryptMessage(`Hello ${data.userName}! welcome to imisebenzi ,you can post or apply jobs here `),
                     userId: data.userId,
                     name: res.data.name,
                     roomId: res.data.id,

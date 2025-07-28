@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useDropzone } from "react-dropzone";
 import { Skeleton } from "@/components/ui/skeleton";
 import DOMPurify from "dompurify";
+import { encryptMessage,decryptMessage} from "@/lib/encrypt";
 import {
   CheckCheck,
   Paperclip,
@@ -169,7 +170,7 @@ export default function Room() {
           "sendMessageWithMedia",
           {
             name: data?.name,
-            message,
+            message:encryptMessage(message),
             roomId,
             userId,
           },
@@ -194,7 +195,7 @@ export default function Room() {
         );
       } else {
         await socket?.emit("sendMessage", {
-          message,
+         message:encryptMessage(message),
           userId,
           name: data.name,
           roomId,
@@ -306,7 +307,7 @@ export default function Room() {
                   <p
                     className="text-sm text-gray-600"
                     dangerouslySetInnerHTML={{
-                      __html: DOMPurify.sanitize(linkifyAll(chat.message)),
+                      __html: DOMPurify.sanitize(linkifyAll(decryptMessage(chat.message))),
                     }}
                   />
                   <div className="flex justify-between flex-nowrap items-center">

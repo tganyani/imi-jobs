@@ -32,6 +32,7 @@ import {
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 import { Pencil } from "lucide-react";
+import { socket } from "@/lib/socket";
 const ReactQuill = dynamic(() => import("react-quill-new"), {
   ssr: false,
 });
@@ -75,6 +76,7 @@ export default function EditVaccancy({
       .patch(`/api/vaccancy/${job.id}`, { ...data, userId })
       .then(({ data }) => {
         if (data.updated) {
+          socket.emit("newJob")
           if (byId) {
             mutate(`/api/vaccancy/${job.id}`);
           } else {

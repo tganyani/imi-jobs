@@ -38,6 +38,7 @@ export type ClientToServerEvents = {
   online: ({ userId }: { userId: string }) => void;
   offline: ({ userId }: { userId: string }) => void;
   notif: ({ roomName }: { roomName: string }) => void;
+  newJob:()=>void
 };
 
 export type ServerToClientEvents = {
@@ -48,6 +49,7 @@ export type ServerToClientEvents = {
   userOffline: () => void;
   userOnline: () => void;
   refreshNotif: () => void;
+  refreshNewJob:()=>void
 };
 
 

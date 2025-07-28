@@ -23,6 +23,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { JobInputs } from "@/lib/types";
 import { toast } from "sonner";
 import { jobFields } from "@/lib/constant";
+import { socket } from "@/lib/socket";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), {
   ssr: false,
@@ -55,6 +56,7 @@ export default function PostJob() {
       .post("/api/vaccancy", { ...data, userId })
       .then(({ data }) => {
         if (data.created) {
+          socket.emit("newJob")
           mutate(`/api/vaccancy/user/${userId}`)
           toast("Job successfully posted", {
                 description: "The job has been published you  can continue to view it ",

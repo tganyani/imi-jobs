@@ -18,6 +18,7 @@ import GoogleButton from "@/components/googleBtn";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
+
 const formSchema = z.object({
   password: z.string().trim().min(6,"password must be at least 6 characters"),
   confirmpassword: z.string(),

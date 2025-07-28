@@ -22,7 +22,7 @@ export function ProjectCarousel({ images }: { images: ProjectImage[] }) {
             key={image.publicId}
             className="basis-auto"
           >
-            <div className="sm:p-1 relative w-[calc(100vw-8px)] sm:w-60 h-60 rounded-md overflow-hidden bg-red-500">
+            <div className="sm:p-1 relative w-[calc(100vw-8px)] sm:w-60 h-60 rounded-md overflow-hidden">
               <Image
                 src={image.url}
                 alt="project image"
