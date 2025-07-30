@@ -149,7 +149,7 @@ export default function Room() {
           chats: [
             ...currentData.chats,
             {
-              message,
+              message:encryptMessage(message),
               userId,
               dateCreated: new Date().toISOString(),
               delivered: false,
