@@ -1,10 +1,11 @@
+import { generateRoomName } from "@/lib/constant";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { code, email, adminEmail } = await req.json();
+    const { code, email, adminEmail, fpasswsord } = await req.json();
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user)
       return Response.json({ error: "User not found" }, { status: 400 });
@@ -27,16 +28,44 @@ export async function POST(req: NextRequest) {
       select: {
         id: true,
         name: true,
+        email: true,
       },
     });
+    if (!fpasswsord) {
+      const name = generateRoomName(admin?.email as string, user.email);
+      const room = await prisma.room.upsert({
+        where: {
+          name,
+        },
+        update: {
+          dateUpdated: new Date(),
+        },
+        create: {
+          name,
+          users: {
+            connect: [admin?.id as string, user.id].map((id: string) => ({
+              id,
+            })),
+          },
+        },
+      });
+      return Response.json({
+        message: "Email verified successfully!",
+        verified: true,
+        email,
+        error: "",
+        id: room.id,
+        userId: admin?.id,
+        name: room.name,
+        userName: user.name,
+      });
+    }
+
     return Response.json({
       message: "Email verified successfully!",
       verified: true,
       email,
       error: "",
-      ids: [user.id, admin?.id],
-      userId: admin?.id,
-      userName: user.name,
     });
   } catch (err) {
     console.error(err);

@@ -15,8 +15,7 @@ import { Suspense } from "react";
 import axios from "axios";
 import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { encryptMessage} from "@/lib/encrypt";
-import { generateRoomName } from "@/lib/constant";
+import { encryptMessage } from "@/lib/encrypt";
 import { socket } from "@/lib/socket";
 
 type Inputs = {
@@ -106,6 +105,7 @@ const VerifyPasswordComponent = () => {
         code: data.code,
         email,
         adminEmail: process.env.NEXT_PUBLIC_ADMIN_EMAIL,
+        fpasswsord,
       })
       .then(async ({ data }) => {
         setLogError(data?.error);
@@ -114,24 +114,15 @@ const VerifyPasswordComponent = () => {
           if (fpasswsord) {
             router.push(`/rpassword?email=${encodeURIComponent(data?.email)}`);
           } else {
-            await axios
-              .post("/api/room", {
-                name: generateRoomName(
-                  process.env.NEXT_PUBLIC_ADMIN_EMAIL as string,
-                  email as string
-                ),
-                ids: data?.ids,
-              })
-              .then((res) => {
-                if (res.data.created) {
-                  socket?.emit("sendMessage", {
-                    message: encryptMessage(`Hello ${data.userName}! welcome to imisebenzi ,you can post or apply jobs here `),
-                    userId: data.userId,
-                    name: res.data.name,
-                    roomId: res.data.id,
-                  });
-                }
-              });
+            socket?.emit("sendMessage", {
+              message: encryptMessage(
+                `Hello ${data.userName}! welcome to imisebenzi ,you can post or apply jobs here `
+              ),
+              userId: data.userId,
+              name: data.name,
+              roomId: data.id,
+            });
+
             router.push("/signin");
           }
         }

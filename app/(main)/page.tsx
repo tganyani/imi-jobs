@@ -115,7 +115,6 @@ export default function Home() {
       mutate();
     }
   };
-
   return (
     <div className="p-2">
       {isLoggedIn && <CheckAccess />}

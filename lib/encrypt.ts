@@ -1,25 +1,54 @@
-import crypto from "crypto";
+import CryptoJS from "crypto-js";
 
-const ENCRYPTION_KEY = crypto.scryptSync(
-  process.env.ENCRYPT_SECRET as string,
-  "my-cypto-salt", // static or dynamic; use a secure value
-  32
-); // 32 bytes key for AES-256
-const IV_LENGTH = 16;
+const SECRET_KEY: string = process.env.NEXT_PUBLIC_ENCRYPT_SECRET || "default-secret";
 
+
+// Encrypt message with AES + IV
 export function encryptMessage(message: string): string {
-  const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv("aes-256-cbc", ENCRYPTION_KEY, iv);
-  const encrypted = Buffer.concat([cipher.update(message, "utf8"), cipher.final()]);
-  return iv.toString("hex") + ":" + encrypted.toString("hex");
+  // Use a SHA256-based IV derived from message (not ideal for production — consider using random IVs)
+  const ivWords = CryptoJS.SHA256(message).words.slice(0, 4);
+  const iv = CryptoJS.lib.WordArray.create(ivWords, 16); // 128-bit IV
+
+  const key = CryptoJS.PBKDF2(SECRET_KEY, CryptoJS.enc.Utf8.parse("my-cypto-salt"), {
+    keySize: 256 / 32,
+    iterations: 1000,
+  });
+
+  const encrypted = CryptoJS.AES.encrypt(message, key, {
+    iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  });
+
+  const encryptedHex = encrypted.ciphertext.toString(CryptoJS.enc.Hex);
+  const ivHex = iv.toString(CryptoJS.enc.Hex);
+
+  return `${ivHex}:${encryptedHex}`;
 }
 
+// Decrypt using same secret and IV
 export function decryptMessage(encryptedData: string): string {
   const [ivHex, encryptedHex] = encryptedData.split(":");
-  const iv = Buffer.from(ivHex, "hex");
-  const encrypted = Buffer.from(encryptedHex, "hex");
+  if (!ivHex || !encryptedHex) throw new Error("Invalid encrypted data format");
 
-  const decipher = crypto.createDecipheriv("aes-256-cbc", ENCRYPTION_KEY, iv);
-  const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
-  return decrypted.toString("utf8");
+  const iv = CryptoJS.enc.Hex.parse(ivHex);
+  const ciphertext = CryptoJS.enc.Hex.parse(encryptedHex);
+
+  const key = CryptoJS.PBKDF2(SECRET_KEY, CryptoJS.enc.Utf8.parse("my-cypto-salt"), {
+    keySize: 256 / 32,
+    iterations: 1000,
+  });
+
+  // Manually create a CipherParams object
+  const cipherParams = CryptoJS.lib.CipherParams.create({
+    ciphertext,
+  });
+
+  const decrypted = CryptoJS.AES.decrypt(cipherParams, key, {
+    iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  });
+
+  return decrypted.toString(CryptoJS.enc.Utf8);
 }
