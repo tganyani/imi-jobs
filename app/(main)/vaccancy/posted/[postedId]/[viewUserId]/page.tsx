@@ -86,7 +86,7 @@ export default function ViewUser() {
       .post(`/api/candidate`, { vaccancyId, userId: viewUserId, roomData })
       .then(async ({ data }) => {
         if (data.proposed) {
-          socket?.emit("notif", { roomName:  data?.roomName });
+          socket?.emit("notif", { roomName: data?.roomName });
           socket?.emit("sendMessage", {
             message: encryptMessage(message),
             userId,
@@ -240,63 +240,65 @@ export default function ViewUser() {
             </Zoom>
           </div>
         </div>
-        <div className="flex gap-4 flex-wrap">
-          {data.jobsApplied.length < 1 && (
-            <Button
-              disabled={data.jobsProposed[0]?.vaccancyId === vaccancyId}
-              onClick={handlePropose}
-              size="sm"
-              className="bg-green-500 w-60 text-white border-none rounded-full [@media(max-width:480px)]:w-full"
-            >
-              {data.jobsProposed[0]?.vaccancyId === vaccancyId
-                ? " proposed"
-                : " propose"}
-            </Button>
-          )}
+        {userId === data.postedId && (
+          <div className="flex gap-4 flex-wrap">
+            {data.jobsApplied.length < 1 && (
+              <Button
+                disabled={data.jobsProposed[0]?.vaccancyId === vaccancyId}
+                onClick={handlePropose}
+                size="sm"
+                className="bg-green-500 w-60 text-white border-none rounded-full [@media(max-width:480px)]:w-full"
+              >
+                {data.jobsProposed[0]?.vaccancyId === vaccancyId
+                  ? " proposed"
+                  : " propose"}
+              </Button>
+            )}
 
-          {data.jobsApplied.length > 0 && (
-            <Button
-              onClick={() =>
-                handleAction(
-                  data.jobsApplied[0]?.id,
-                  ApplicationStatus.invited,
-                  data.jobsApplied[0].roomName,
-                  data.jobsApplied[0].roomId
-                )
-              }
-              disabled={
-                data.jobsApplied[0]?.status === ApplicationStatus.invited
-              }
-              size="sm"
-              className="bg-[var(--mygreen)] w-60 text-white border-none rounded-full [@media(max-width:480px)]:w-full"
-            >
-              {data.jobsApplied[0]?.status === ApplicationStatus.invited
-                ? "Invited"
-                : "Invite"}
-            </Button>
-          )}
-          {data.jobsApplied.length > 0 && (
-            <Button
-              onClick={() =>
-                handleAction(
-                  data.jobsApplied[0]?.id,
-                  ApplicationStatus.rejected,
-                  data.jobsApplied[0].roomName,
-                  data.jobsApplied[0].roomId
-                )
-              }
-              disabled={
-                data.jobsApplied[0]?.status === ApplicationStatus.rejected
-              }
-              size="sm"
-              className="bg-red-500 w-60  text-white border-none rounded-full [@media(max-width:480px)]:w-full"
-            >
-              {data.jobsApplied[0]?.status === ApplicationStatus.rejected
-                ? " Rejectd"
-                : " Reject"}
-            </Button>
-          )}
-        </div>
+            {data.jobsApplied.length > 0 && (
+              <Button
+                onClick={() =>
+                  handleAction(
+                    data.jobsApplied[0]?.id,
+                    ApplicationStatus.invited,
+                    data.jobsApplied[0].roomName,
+                    data.jobsApplied[0].roomId
+                  )
+                }
+                disabled={
+                  data.jobsApplied[0]?.status === ApplicationStatus.invited
+                }
+                size="sm"
+                className="bg-[var(--mygreen)] w-60 text-white border-none rounded-full [@media(max-width:480px)]:w-full"
+              >
+                {data.jobsApplied[0]?.status === ApplicationStatus.invited
+                  ? "Invited"
+                  : "Invite"}
+              </Button>
+            )}
+            {data.jobsApplied.length > 0 && (
+              <Button
+                onClick={() =>
+                  handleAction(
+                    data.jobsApplied[0]?.id,
+                    ApplicationStatus.rejected,
+                    data.jobsApplied[0].roomName,
+                    data.jobsApplied[0].roomId
+                  )
+                }
+                disabled={
+                  data.jobsApplied[0]?.status === ApplicationStatus.rejected
+                }
+                size="sm"
+                className="bg-red-500 w-60  text-white border-none rounded-full [@media(max-width:480px)]:w-full"
+              >
+                {data.jobsApplied[0]?.status === ApplicationStatus.rejected
+                  ? " Rejectd"
+                  : " Reject"}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* bio */}

@@ -131,6 +131,7 @@ export type Candidate = {
   jobsProposed: {
     vaccancyId: string;
   }[];
+  postedId:string
 };
 
 export type Chat = {

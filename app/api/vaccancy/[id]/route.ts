@@ -1,3 +1,4 @@
+import { FbJobFeed } from "@/lib/fbJob";
 import prisma from "@/lib/prisma";
 
 export async function GET(
@@ -84,6 +85,7 @@ export async function PATCH(
       },
       data,
     });
+    await FbJobFeed(updated)
     return Response.json({ updated: true, id: updated.id });
   } catch (err) {
     console.log(err);

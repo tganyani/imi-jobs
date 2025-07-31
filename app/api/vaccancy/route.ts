@@ -1,3 +1,4 @@
+import { FbJobFeed } from "@/lib/fbJob";
 import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
 
@@ -7,6 +8,7 @@ export async function POST(req: NextRequest) {
     const vaccancy = await prisma.vaccancy.create({
       data: body,
     });
+    await FbJobFeed(vaccancy)
     return Response.json({ created: true, id: vaccancy.id });
   } catch (err) {
     console.error(err);

@@ -13,6 +13,14 @@ export async function GET(
   const { searchParams } = new URL(req.url);
   const vaccancyId = searchParams.get("vaccancyId") as string;
   try {
+    const job = await prisma.vaccancy.findUnique({
+      where:{
+        id:vaccancyId
+      },
+      select:{
+        userId:true
+      }
+    })
     const user = await prisma.user.findUnique({
       where: {
         id,
@@ -102,6 +110,7 @@ export async function GET(
             )[0].id,
           }]
         : [],
+        postedId:job?.userId
     });
   } catch (err) {
     console.error(err);
