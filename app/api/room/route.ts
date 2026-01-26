@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
     });
 
     return Response.json(
-      user?.rooms?.map((room) => ({
+      user?.rooms?.map((room:any) => ({
         ...room,
         users: room?.users[0],
         nUnread:room._count.chats

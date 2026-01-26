@@ -4,7 +4,9 @@ import { PNG } from "pngjs";
 import FormData from "form-data";
 import { stringToColor } from "./constant";
 
-export async function generatePngWithBackground(color = "#ffffff"): Promise<Buffer> {
+export async function generatePngWithBackground(
+  color = "#ffffff",
+): Promise<Buffer> {
   const width = 1200;
   const height = 630;
 
@@ -19,7 +21,7 @@ export async function generatePngWithBackground(color = "#ffffff"): Promise<Buff
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const idx = (width * y + x) << 2;
-      png.data[idx] = r;     // R
+      png.data[idx] = r; // R
       png.data[idx + 1] = g; // G
       png.data[idx + 2] = b; // B
       png.data[idx + 3] = 255; // Alpha
@@ -45,6 +47,10 @@ ${job.title}  at ${job.companyName}
 Location: ${job.city}, ${job.country}
 
 Apply here: https://www.imisebenzi.co.zw/vaccancy/${job.id}
+
+
+#ZimbabweJobs #SouthAfricaJobs #VacanciesZW #CareersSA
+#JobsInZimbabwe #HiringNow #JobAlert
 `;
 
   const color = stringToColor(job.title);
@@ -61,14 +67,14 @@ Apply here: https://www.imisebenzi.co.zw/vaccancy/${job.id}
 
   try {
     const response = await axios.post(
-      `https://graph.facebook.com/v19.0/${process.env.PAGE_ID}/photos`,
+      `https://graph.facebook.com/v24.0/${process.env.PAGE_ID}/photos`,
       form,
       {
         headers: form.getHeaders(),
-      }
+      },
     );
 
-    console.log("Posted successfully:", response.data);
+    // console.log("Posted successfully:", response.data);
   } catch (error) {
     console.error("Error posting to Facebook:", error);
   }

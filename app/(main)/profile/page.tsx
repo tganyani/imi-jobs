@@ -7,7 +7,18 @@ import useSWR from "swr";
 import Loading from "@/components/loading";
 import { Candidate, Edu, Employ, Language, Project, Skill } from "@/lib/types";
 import EditNameMoadal from "@/components/editNameModal";
-import { MapPin, Phone, Globe, MoveRight, Copy, CopyCheck } from "lucide-react";
+import {
+  MapPin,
+  Phone,
+  Globe,
+  MoveRight,
+  Copy,
+  CopyCheck,
+  FileText,
+  CircleX,
+  CloudUpload,
+  Upload,
+} from "lucide-react";
 import EditBioMoadal from "@/components/editBioModal";
 import EditEducationMoadal from "@/components/editEducationModal";
 import DOMPurify from "dompurify";
@@ -27,21 +38,29 @@ import EditCompanyMainInfoMoadal from "@/components/editCompanyMainInfo";
 import EditContactMoadal from "@/components/editContactModal";
 
 import EditLanguageMoadal from "@/components/editLanguageModal";
+// upload cxv
+import { useCallback } from "react";
+import { useDropzone } from "react-dropzone";
+import { Button } from "@/components/ui/button";
+import CVComponent from "@/components/cvComponent";
 
 dayjs.extend(relativeTime);
 
 export default function Profile() {
   const router = useRouter();
   const { userId, role, isLoggedIn } = useAuthStore();
+  
   useEffect(() => {
     if (!isLoggedIn) return router.push("/signin");
   }, [isLoggedIn]);
   const [copeid, setCopied] = useState<boolean>(false);
 
+  
+ 
   const isCandidate = role === Role.candidate;
   const { data, error, isLoading } = useSWR<Candidate>(
     `/api/candidate/${userId}`,
-    fetcher
+    fetcher,
   );
   const handleCopy = async (text: string) => {
     try {
@@ -301,6 +320,8 @@ export default function Profile() {
           </div>
         </>
       )}
+      {/* Cv */}
+      <CVComponent url={data.cvUrl}/>
       {/* contact info */}
       <div className="space-y-2">
         <div className="flex flex-row justify-between ">

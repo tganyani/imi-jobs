@@ -34,6 +34,7 @@ import { useAuthStore } from "@/stores/authStore";
 dayjs.extend(relativeTime);
 
 import { socket } from "@/lib/socket";
+import ViewCV from "@/components/viewCv";
 
 export default function ViewUser() {
   const { viewUserId } = useParams();
@@ -48,7 +49,7 @@ export default function ViewUser() {
 
   const { data, error, isLoading, mutate } = useSWR<Candidate>(
     `/api/vaccancy/applicants/${viewUserId}?vaccancyId=${vaccancyId}`,
-    fetcher
+    fetcher,
   );
   const handleCopy = async (text: string) => {
     try {
@@ -66,7 +67,7 @@ export default function ViewUser() {
       data
         ? { ...data, jobsProposed: [{ ...data.jobsProposed[0], vaccancyId }] }
         : undefined,
-      false
+      false,
     );
     const message = `<h6 style="color: #2e7d32;">Job Offer Proposal</h6> <br/>You have recived a job proposal from for this postion  https://www.imisebenzi.co.zw/vaccancy/${vaccancyId} <br/> <p>We were impressed by your qualifications and believe your experience could be a strong match for our team. As the next step, we would like to schedule an interview to learn more about your background and to give you the opportunity to ask us questions as well.</p>
 
@@ -123,14 +124,14 @@ export default function ViewUser() {
     id: string,
     status: string,
     name: string,
-    roomId: string
+    roomId: string,
   ) => {
     const companyName = data?.name;
     await mutate(
       data
         ? { ...data, jobsApplied: [{ ...data.jobsApplied[0], status }] }
         : undefined,
-      false
+      false,
     );
     await axios
       .patch(`/api/vaccancy/applicants/${id}`, { status })
@@ -262,7 +263,7 @@ export default function ViewUser() {
                     data.jobsApplied[0]?.id,
                     ApplicationStatus.invited,
                     data.jobsApplied[0].roomName,
-                    data.jobsApplied[0].roomId
+                    data.jobsApplied[0].roomId,
                   )
                 }
                 disabled={
@@ -283,7 +284,7 @@ export default function ViewUser() {
                     data.jobsApplied[0]?.id,
                     ApplicationStatus.rejected,
                     data.jobsApplied[0].roomName,
-                    data.jobsApplied[0].roomId
+                    data.jobsApplied[0].roomId,
                   )
                 }
                 disabled={
@@ -409,7 +410,8 @@ export default function ViewUser() {
           ))}
         </div>
       </div>
-
+      {/* CV */}
+      <ViewCV url={data.cvUrl} />
       {/* contact info */}
       <div className="space-y-2">
         <div className="flex flex-row justify-between ">

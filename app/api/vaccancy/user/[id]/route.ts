@@ -34,7 +34,7 @@ export async function GET(
       },
     });
     return Response.json(
-      jobs.map(({_count,...rest}) => ({
+      jobs.map(({_count,...rest}:any) => ({
         ...rest,
         views: _count.views,
         nApplications:_count.applications,

@@ -5,7 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+ provider     = "prisma-client"    
+  output       = "../src/generated/prisma"
 }
 
 datasource db {
@@ -29,6 +30,8 @@ model User {
   position          String?
   image             String?
   imagePublicId     String?
+  cvUrl             String?
+  cvPublicId        String?
   phone             String?
   linkedInn         String?
   faceBook          String?
@@ -190,7 +193,7 @@ model Notification {
   targetId    String
   type        NotificationType
   isCandidate Boolean
-  read Boolean @default(false)
+  read        Boolean          @default(false)
   createdAt   DateTime         @default(now())
 }
 

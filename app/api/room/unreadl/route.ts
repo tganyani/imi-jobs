@@ -22,8 +22,8 @@ export async function GET(req: NextRequest) {
         },
       },
     });
-    const nUread = user?.rooms.filter((room) =>
-      room.chats.some((chat) => chat.read === false && chat.userId !== userId)
+    const nUread = user?.rooms.filter((room:any) =>
+      room.chats.some((chat:any) => chat.read === false && chat.userId !== userId)
     );
     return Response.json({
       nUread: nUread?.length,

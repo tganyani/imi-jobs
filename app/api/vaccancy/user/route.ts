@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
       },
     });
     return Response.json(
-      applications.map((aplcn) => ({
+      applications.map((aplcn:any) => ({
         id: aplcn.id,
         letter: aplcn.coverLetter,
         status: aplcn.status,
@@ -58,8 +58,8 @@ export async function GET(req: NextRequest) {
         jobTitle: aplcn.vaccancy.title,
         jobId: aplcn.vaccancy.id,
         nViews: aplcn.vaccancy._count.views,
-        roomId: aplcn.vaccancy.user.rooms.filter((room) =>
-          room.users.some((user) => user.id === aplcn.vaccancy.userId)
+        roomId: aplcn.vaccancy.user.rooms.filter((room:any) =>
+          room.users.some((user:any) => user.id === aplcn.vaccancy.userId)
         )[0].id,
       }))
     );

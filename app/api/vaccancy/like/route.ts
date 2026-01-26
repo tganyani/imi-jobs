@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
         },
       },
     });
-    return Response.json(liked.map((like) => ({ ...like.vaccancy })));
+    return Response.json(liked.map((like:any) => ({ ...like.vaccancy })));
   } catch (err) {
     console.error(err);
     return Response.json({ error: "error" }, { status: 500 });

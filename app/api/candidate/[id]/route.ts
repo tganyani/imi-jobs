@@ -35,6 +35,8 @@ export async function GET(
           companyInfo: true,
           companyName: true,
           address: true,
+          cvUrl:true,
+          cvPublicId:true,
           projects: {
             include: {
               images: {

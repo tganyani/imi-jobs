@@ -1,5 +1,6 @@
 import { FbJobFeed } from "@/lib/fbJob";
 import prisma from "@/lib/prisma";
+import sendWhatsupGroupMessage from "@/lib/wJob";
 import { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -8,7 +9,10 @@ export async function POST(req: NextRequest) {
     const vaccancy = await prisma.vaccancy.create({
       data: body,
     });
-    await FbJobFeed(vaccancy)
+    //  send to facebook 
+    await FbJobFeed(vaccancy);
+    // sen to whats up group
+    await sendWhatsupGroupMessage(vaccancy)
     return Response.json({ created: true, id: vaccancy.id });
   } catch (err) {
     console.error(err);
@@ -37,8 +41,8 @@ export async function GET(req: NextRequest) {
           { country: { contains: country, mode: "insensitive" } },
         ],
       },
-      orderBy:{
-        updatedAt:"desc"
+      orderBy: {
+        updatedAt: "desc",
       },
       take: batch,
       include: {

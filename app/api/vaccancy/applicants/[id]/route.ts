@@ -45,6 +45,7 @@ export async function GET(
         telegram: true,
         whatsapp: true,
         languages: true,
+        cvUrl:true,
         jobsProposed: {
           where: {
             vaccancyId,
@@ -98,14 +99,14 @@ export async function GET(
         ? [{
             id: user?.jobsApplied[0].id,
             status: user?.jobsApplied[0].status,
-            roomName: user?.jobsApplied[0].user.rooms.filter((rm) =>
+            roomName: user?.jobsApplied[0].user.rooms.filter((rm:any) =>
               rm.users.some(
-                (usr) => usr.id === user?.jobsApplied[0].vaccancy.user.id
+                (usr:any) => usr.id === user?.jobsApplied[0].vaccancy.user.id
               )
             )[0].name,
-            roomId: user?.jobsApplied[0].user.rooms.filter((rm) =>
+            roomId: user?.jobsApplied[0].user.rooms.filter((rm:any) =>
               rm.users.some(
-                (usr) => usr.id === user?.jobsApplied[0].vaccancy.user.id
+                (usr:any) => usr.id === user?.jobsApplied[0].vaccancy.user.id
               )
             )[0].id,
           }]

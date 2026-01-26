@@ -122,6 +122,8 @@ export type Candidate = {
   companyName: string;
   companyInfo: string;
   address: string;
+  cvUrl: string;
+  cvPublicId: string;
   eduction: Edu[];
   skills: Skill[];
   languages: Language[];
@@ -131,7 +133,7 @@ export type Candidate = {
   jobsProposed: {
     vaccancyId: string;
   }[];
-  postedId:string
+  postedId: string;
 };
 
 export type Chat = {

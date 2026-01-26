@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
       },
     });
     return Response.json(
-      applications.map(({ user, vaccancy, ...rest }) => ({
+      applications.map(({ user, vaccancy, ...rest }:any) => ({
         ...rest,
         candidateName: user.name,
         roomId: user.rooms[0]?.id,
