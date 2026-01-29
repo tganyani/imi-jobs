@@ -1,0 +1,248 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String              @id @default(uuid())
+  name              String
+  email             String              @unique
+  password          String
+  verificationCode  String?
+  coverLetter       String?
+  bio               String?
+  country           String?
+  city              String?
+  active            Boolean             @default(true)
+  isOnline          Boolean             @default(false)
+  lastSeen          DateTime            @default(now())
+  position          String?
+  image             String?
+  imagePublicId     String?
+  cvUrl             String?
+  cvPublicId        String?
+  phone             String?
+  linkedInn         String?
+  faceBook          String?
+  website           String?
+  telegram          String?
+  whatsapp          String?
+  companyInfo       String?
+  companyName       String?
+  address           String?
+  jobsPosted        Vaccancy[]
+  jobsApplied       Application[]
+  jobsProposed      Proposal[]
+  likedJobs         Like[]
+  viewedJobs        View[]
+  skills            Skill[]
+  languages         Language[]
+  eduction          Education[]
+  employmentHistory EmploymentHistory[]
+  projects          Project[]
+  rooms             Room[]
+  verified          Boolean             @default(false)
+  role              Role                @default(candidate)
+  ceatedAt          DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+}
+
+enum Role {
+  candidate
+  recruiter
+}
+
+model Vaccancy {
+  id           String        @id @default(uuid())
+  companyName  String
+  city         String
+  country      String
+  title        String
+  description  String
+  salary       String
+  type         String
+  sector       String
+  userId       String
+  active       Boolean       @default(true)
+  applications Application[]
+  user         User          @relation(fields: [userId], references: [id])
+  likes        Like[]
+  views        View[]
+  proposals    Proposal[]
+  ceatedAt     DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Application {
+  id          String            @id @default(uuid())
+  userId      String
+  vaccancyId  String
+  coverLetter String
+  status      ApplicationStatus @default(pending)
+  user        User              @relation(fields: [userId], references: [id])
+  vaccancy    Vaccancy          @relation(fields: [vaccancyId], references: [id])
+  ceatedAt    DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([userId, vaccancyId]) // Ensure one application per user per vaccancy
+}
+
+enum ApplicationStatus {
+  invited
+  pending
+  rejected
+}
+
+model Like {
+  id         String   @id @default(uuid())
+  userId     String
+  vaccancyId String
+  user       User     @relation(fields: [userId], references: [id])
+  vaccancy   Vaccancy @relation(fields: [vaccancyId], references: [id])
+  ceatedAt   DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, vaccancyId]) // Ensure one like per user per vaccancy
+}
+
+model View {
+  id         String   @id @default(uuid())
+  userId     String
+  vaccancyId String
+  user       User     @relation(fields: [userId], references: [id])
+  vaccancy   Vaccancy @relation(fields: [vaccancyId], references: [id])
+  ceatedAt   DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, vaccancyId]) // Ensure one like per user per vaccancy
+}
+
+model EmploymentHistory {
+  id       String   @id @default(uuid())
+  position String
+  company  String
+  location String
+  roles    String
+  startAt  DateTime
+  endAt    DateTime
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+}
+
+model Education {
+  id           String   @id @default(uuid())
+  institution  String
+  archievement String
+  startAt      DateTime
+  endAt        DateTime
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+model Skill {
+  id     String @id @default(uuid())
+  title  String
+  level  String
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model Language {
+  id     String @id @default(uuid())
+  name   String
+  level  String
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model Project {
+  id          String          @id @default(cuid())
+  title       String
+  description String
+  images      ProjectImages[]
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model ProjectImages {
+  publicId  String   @id
+  url       String
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  toId        String
+  fromName    String
+  targetId    String
+  type        NotificationType
+  isCandidate Boolean
+  read        Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+}
+
+enum NotificationType {
+  invitation
+  rejection
+  proposal
+  application
+}
+
+model Chat {
+  id          String      @id @default(cuid())
+  message     String
+  roomId      String
+  userId      String
+  delivered   Boolean     @default(false)
+  read        Boolean     @default(false)
+  room        Room        @relation(fields: [roomId], references: [id])
+  media       ChatMedia[]
+  dateCreated DateTime    @default(now())
+  dateUpdated DateTime    @updatedAt
+}
+
+model Room {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  chats       Chat[]
+  users       User[]
+  dateCreated DateTime @default(now())
+  dateUpdated DateTime @updatedAt
+}
+
+model ChatMedia {
+  publicId     String   @id
+  url          String
+  chatId       String
+  originalName String   @default("file")
+  chat         Chat     @relation(fields: [chatId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Proposal {
+  id         String   @id @default(uuid())
+  userId     String
+  vaccancyId String
+  user       User     @relation(fields: [userId], references: [id])
+  vaccancy   Vaccancy @relation(fields: [vaccancyId], references: [id])
+  ceatedAt   DateTime @default(now())
+
+  @@unique([userId, vaccancyId]) // Ensure one application per user per vaccancy
+}
